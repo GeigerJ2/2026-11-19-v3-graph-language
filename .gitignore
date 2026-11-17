@@ -1,0 +1,18 @@
+# Node / bun
+node_modules/
+*.log
+
+# Slidev build output
+dist/
+.vite-inspect/
+.remote-assets/
+components.d.ts
+
+# Exported decks (rebuild from source)
+*-export.pdf
+slides-export.*
+
+# Local overrides
+*.local
+.env
+.env.*
