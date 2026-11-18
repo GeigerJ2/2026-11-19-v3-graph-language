@@ -226,6 +226,21 @@ def broken(value: int, flag: bool) -> int:
 broken.build()
 ```
 
+**Fix: bind `total` before the `if`, or add an `else` arm**
+
+```python
+total = value
+if flag:
+    total = add(x=value, y=1)
+```
+
+```python
+if flag:
+    total = add(x=value, y=1)
+else:
+    total = add(x=value, y=2)
+```
+
 ::right::
 
 ```text
@@ -288,8 +303,9 @@ def add(x: int, y: int) -> int:
     return x + y
 ```
 
-- The `GraphProcess` evaluates `flag` and starts the selected task.
-- The task runs its Python body and creates the result node.
+- The `GraphProcess` (stored as a `GraphNode`) evaluates `flag` and starts the selected task.
+- The task runs as its own process (`CalcFunctionNode`), executes its Python body, and creates the result node.
+- Separate processes are not separate workers: daemon execution may use different workers; a local run uses one interpreter.
 
 ::right::
 
@@ -313,7 +329,7 @@ def choose(x: int, flag: bool) -> int:
 
 <div class="caption">
 
-Recorded provenance of a local run (`x=10, flag=True → result=11`): declared input names are preserved; `CREATE` and `RETURN` share one result node. Node identifiers are illustrative.
+Provenance of a local run (`x=10, flag=True → result=11`), rendered by `aiida.tools.visualization.Graph` from stored nodes and links: declared input names are preserved; `CREATE` and `RETURN` share one result node. Node identifiers are illustrative.
 
 </div>
 
@@ -458,14 +474,15 @@ def ensure(value: int | None) -> None:
 @graph
 def restartable(x: int, max_retries: int, attempt: int = 0) -> int:
     value, error = run_step(x=x, attempt=attempt)
-    while error is not None and attempt < max_retries:
+    while error is StepErrors.UNSTABLE and attempt < max_retries:
         attempt = attempt + 1
         value, error = run_step(x=x, attempt=attempt)
     checked = ensure(value=value)
     return value
 ```
 
-- `UNSTABLE` (410) with budget left runs the step again; `Ok(value)` ends the loop.
+- `error is StepErrors.UNSTABLE` retries only that member; any other outcome ends the loop.
+- `attempt` starts at 0; `max_retries` counts repeats after the first call.
 - The counter is inline state, not a child process. `ensure` fails the graph when every attempt failed.
 
 ---
@@ -507,6 +524,10 @@ def mean_cell_volume(structures: DataList) -> float:
 ```
 
 ::right::
+
+<div class="flow">
+<span class="box">DataList</span>→<span class="stack"><span class="box">expand_cell</span><span class="box">expand_cell</span><span class="box">expand_cell</span></span>→<span class="box">DataList</span>→<span class="box">mean_cell_volume</span>
+</div>
 
 ```python
 @graph
@@ -580,19 +601,27 @@ def add_shifted(x: int, y: int) -> int:
 ```
 
 ---
+layout: two-cols-header
+layoutClass: dense
+---
 
 # Structured inputs with PortModel
 
 One schema declares nested ports, defaults, and help text for tasks and graphs.
 
+::left::
+
 ```python
 from typing import Annotated
 
-from aiida.engine import PortField, PortModel, task
+from aiida.engine import PortField, PortModel
+from aiida.engine import graph, run_get_node, task
 
 
 class Scaling(PortModel):
-    factor: Annotated[float, PortField(help='Cell scale factor.')] = 1.05
+    factor: Annotated[
+        float, PortField(help='Cell scale factor.')
+    ] = 1.05
 
 
 class Settings(PortModel):
@@ -605,21 +634,40 @@ def scaled_volume(volume: float, settings: Settings) -> float:
     return volume * settings.scaling.factor**3
 ```
 
-- Each field becomes its own input node; `settings={'scaling': {}}` fills the defaults (`11.57625` for volume `10.0`).
+::right::
 
+```python
+@graph
+def configured(volume: float, settings: Settings) -> float:
+    return scaled_volume(volume=volume, settings=settings)
+
+
+run_get_node(configured, volume=10.0, settings={'scaling': {}})
+```
+
+- Each field becomes its own port and input node: `settings.scaling.factor` → `Float(1.05)`, `settings.label` → `Str('demo')`.
+- `settings={'scaling': {}}` fills the nested defaults; the result is `11.57625`.
+
+---
+layout: two-cols-header
+layoutClass: dense
 ---
 
 # Pydantic models as port namespaces
 
 `BaseModel` declarations map to the same typed port namespaces as `PortModel`.
 
+::left::
+
 ```python
-from aiida.engine import task
+from aiida.engine import graph, run_get_node, task
 from pydantic import BaseModel, Field
 
 
 class PydanticScaling(BaseModel):
-    factor: float = Field(default=1.05, description='Cell scale factor.')
+    factor: float = Field(
+        default=1.05, description='Cell scale factor.'
+    )
 
 
 class PydanticSettings(BaseModel):
@@ -628,12 +676,30 @@ class PydanticSettings(BaseModel):
 
 
 @task
-def scaled_volume(volume: float, settings: PydanticSettings) -> float:
+def scaled_volume(
+    volume: float, settings: PydanticSettings
+) -> float:
     return volume * settings.scaling.factor**3
 ```
 
+::right::
+
+```python
+@graph
+def configured_pydantic(
+    volume: float, settings: PydanticSettings
+) -> float:
+    return scaled_volume(volume=volume, settings=settings)
+
+
+run_get_node(
+    configured_pydantic, volume=10.0, settings={'scaling': {}}
+)
+```
+
 - Nested models, defaults, and `Field(description=...)` help text become ports; leaves accept `str`, `int`, `float`, `bool`, and their optional forms.
-- Tasks receive attribute-accessible mappings, not model instances. Validators and field aliases are rejected at declaration; check values inside the `@task`.
+- Tasks receive attribute-accessible mappings, not model instances; model methods are unavailable.
+- AiiDA ports check types. Validators and field aliases are rejected at declaration; check values inside the `@task`.
 
 ---
 layout: two-cols-header
@@ -689,160 +755,115 @@ outputs, node = run_get_node(
 )
 ```
 
+- `multiply_add` keeps its outline and children and computes `x * y + z`; `add_calc` adds `z` to that result.
+- The graph only connects them and returns the existing `sum` node; both run as ordinary child processes with provenance.
 - `code` and `metadata` are execution settings: they travel under `runtime_config`, separate from the scientific inputs.
-- Both placements run as ordinary child processes with provenance.
 
----
-layout: two-cols-header
-layoutClass: side-by-side
 ---
 
 # Case study: koopmans Wannierization
 
-Wannierize each projection block with `Wannier90WorkChain`, then merge the Hamiltonians.
+A koopmans developer ported a WorkGraph workflow to the graph language and reported what it lacked.
 
-::left::
-
-**WorkGraph**
-
-```python
-@task.graph
-def wannierize_blocks(
-    structure: StructureData,
-    codes: Codes,
-    blocks: list[Block],
-    grid: list[int],
-    factor: int = 1,
-    bands_kpoints: KpointsData | None = None,
-) -> WannierizeOutputs:
-    if factor < 1:
-        raise ValueError('factor must be a positive integer')
-    if factor > 1:
-        grid = [n * factor for n in grid]
-    results = {}
-    for block in blocks:
-        results[block.label] = Wannierize(  # wraps Wannier90WorkChain
-            structure=structure,
-            codes=codes,
-            block=block,
-            grid=grid,
-            bands_kpoints=bands_kpoints,
-            metadata={'call_link_label': f'wannierize_{block.label}'},
-        )
-    num_wann = sum(block.num_wann for block in blocks)
-    merged = merge_hamiltonians(blocks=results, num_wann=num_wann)
-    return WannierizeOutputs(blocks=results, hamiltonian=merged)
-```
-
-::right::
-
-**Graph language, first port**
-
-```python
-@graph
-def wannierize_blocks(
-    structure: StructureData,
-    blocks: DataDict,  # (b) container of nodes
-    grid: list[int],
-    factor: int = 1,
-    bands_kpoints: KpointsData | None = None,
-) -> WannierizeOutputs:
-    checked = check_positive(factor=factor)  # (d) runtime task
-    mesh = scale_grid(grid=grid, factor=factor)  # (c)
-    items = bundle(
-        blocks=blocks,
-        structure=structure,
-        mesh=mesh,
-        bands_kpoints=bands_kpoints,
-    )  # (a)
-    results = par_map(wannierize_one, items)  # (e)
-    num_wann = count_wann(blocks=blocks)  # (c)
-    merged = merge_hamiltonians(blocks=results, num_wann=num_wann)
-    return {'blocks': results, 'hamiltonian': merged}
-```
-
-::bottom::
-
-- (a) `bundle` copies the shared inputs into one container per block; `unpack` and the one-input graph `wannierize_one` read them back.
-- (b) `blocks` is a container of nodes, not `dict[str, Block]`. (e) Mapped items get no per-block call link label.
-- (&#99;), (d) `scale_grid`, `count_wann`, and `check_positive` are tasks for one-line arithmetic and a runtime check.
+- The workflow runs `Wannier90WorkChain` once per projection block, with the same structure, k-point grid, and band k-points for every block, then merges the Hamiltonians.
+- WorkGraph: a Python `for` loop over the blocks makes one call per block.
+- Graph language: `par_map` over the blocks replaces the loop.
+- The first port needed helper tasks for two things the language now covers: inputs shared by all mapped calls, and list arithmetic on the grid.
 
 ---
 layout: two-cols-header
 layoutClass: dense
 ---
 
-# Case study: current graph
+# Case study: shared inputs for mapped calls
 
 ::left::
 
+**First port**
+
 ```python
-from typing import TypedDict
-
-from aiida import orm
-from aiida.engine import graph, par_map, task
-
-# `Wannierize` and `merge_hamiltonians`: existing koopmans tasks
+# bundle: task copying shared inputs into one DataDict per block
+# unpack: task reading them back out of one item
 
 
-class WannierizeOutputs(TypedDict):
-    blocks: orm.DataDict
-    hamiltonian: orm.Data
+@graph
+def wannierize_one(item: DataDict) -> ...:
+    inputs = unpack(item=item)
+    return Wannierize(
+        structure=inputs.structure,
+        block=inputs.block,
+        mesh=inputs.mesh,
+        bands_kpoints=inputs.bands_kpoints,
+    )
 
 
-@task
-def positive(factor: int) -> int:
-    if factor < 1:
-        raise ValueError(
-            f'factor must be a positive integer, got {factor}'
-        )
-    return factor
-
-
-@task
-def count_wann(blocks: orm.DataDict) -> int:
-    return sum(block['num_wann'] for block in blocks.values())
+# in wannierize_blocks
+items = bundle(
+    blocks=blocks,
+    structure=structure,
+    mesh=mesh,
+    bands_kpoints=bands_kpoints,
+)
+results = par_map(wannierize_one, items)
 ```
 
 ::right::
 
+**Now**
+
 ```python
-@graph
-def wannierize_blocks(
-    structure: orm.StructureData,
-    blocks: orm.DataDict,
-    grid: list[int],
-    factor: int = 1,
-    bands_kpoints: orm.KpointsData | None = None,
-) -> WannierizeOutputs:
-    checked = positive(factor=factor)
-    mesh = [n * checked for n in grid]
-    configured = partial(
-        Wannierize,
-        structure=structure,
-        mesh=mesh,
-        bands_kpoints=bands_kpoints,
-    )
-    results = par_map(configured, blocks)
-    num_wann = count_wann(blocks=blocks)
-    merged = merge_hamiltonians(blocks=results, num_wann=num_wann)
-    return {'blocks': results, 'hamiltonian': merged}
+# in wannierize_blocks
+configured = partial(
+    Wannierize,
+    structure=structure,
+    mesh=mesh,
+    bands_kpoints=bands_kpoints,
+)
+results = par_map(configured, blocks)
 ```
+
+- `partial` fixes the shared inputs; `par_map` maps the remaining `block` input.
+- Shared nodes travel as ordinary input wires, so every `Wannierize` run links to the original structure.
+- Mapping a `DataDict` keeps its keys and insertion order.
+
+---
+layout: two-cols-header
+layoutClass: dense
+---
+
+# Case study: list arithmetic inline
+
+::left::
+
+**First port**
+
+```python
+@task
+def scale_grid(grid: list[int], factor: int) -> list[int]:
+    return [n * factor for n in grid]
+
+
+# in wannierize_blocks
+mesh = scale_grid(grid=grid, factor=factor)
+```
+
+::right::
+
+**Now**
+
+```python
+# in wannierize_blocks
+mesh = [n * factor for n in grid]
+```
+
+- The comprehension runs inside the graph process: no task, no node, and its value is checkpointed.
+- Typed `list[T]` and `dict[str, T]` ports support indexing and comprehensions.
 
 ---
 
-# Case study: changes
+# Case study: open points
 
-**Changed**
-
-- `partial` fixes the shared inputs; `par_map` maps the remaining `block` input. `bundle`, `unpack`, and `wannierize_one` are gone, and every block links to the original structure.
-- `[n * checked for n in grid]` replaces `scale_grid`; it runs inline and creates no node.
-- Mapping a `DataDict` keeps its keys and insertion order.
-- Codes and execution settings travel under `runtime_config`.
-
-**Still different**
-
-- `par_map` needs an `orm.DataDict` or `orm.DataList`, not a typed Python mapping.
+- `par_map` needs an `orm.DataDict` or `orm.DataList`, not a typed Python mapping such as `dict[str, Block]`.
 - Inline `sum(...)`, generator expressions, and `tuple(...)` are unsupported, so `count_wann` stays a task.
-- Positivity and grid-length constraints are runtime checks, not annotations.
-- Per-item metadata, such as one call link label per block, is unsupported.
+- Positivity and grid-length constraints are runtime checks in a task, not annotations.
+- Per-item metadata, such as one call link label per block, is unsupported; `.alias(...)` names a placement, not a map item.
