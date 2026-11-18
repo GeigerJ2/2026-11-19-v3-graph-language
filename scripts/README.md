@@ -87,6 +87,25 @@ configuration; explicit scheduler options apply to `add_calc`. The stock
 `MultiplyAddWorkChain` does not expose scheduler options and uses its internal
 arithmetic CalcJob's resource defaults.
 
+## Presentation-only DOT → SVG styling
+
+`render_provenance.py` restyles existing AiiDA-generated DOT digraphs without
+loading a profile or executing any workflows. It requires Graphviz's `dot` and
+the project's Python `graphviz` package. Run from this presentation directory:
+
+```bash
+uv run python scripts/render_provenance.py \
+  scripts/generated/09_multiply_add_0 \
+  scripts/generated/09_multiply_add_1
+```
+
+The slide-ready SVGs are written to `public/assets/09_multiply_add_0-slides.svg`
+and `public/assets/09_multiply_add_1-slides.svg`. Use `--output-dir` to change the
+destination. The source DOT and original SVGs remain untouched. Every node, edge,
+and label is preserved, including PKs, execution states, and link types; only
+layout and styling change. The renderer supports flat AiiDA digraphs, not nested
+subgraphs.
+
 ## Standalone annotations
 
 The retry, structure, and model examples use eager annotations. This preserves
