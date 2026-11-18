@@ -2,6 +2,7 @@
 theme: seriph
 title: Graph language for aiida-core v3
 transition: fade
+colorSchema: light
 ---
 
 <div class="flex items-center gap-10" style="height: 100%">
@@ -11,7 +12,7 @@ transition: fade
 
 Plain Python functions instead of process outlines. Checked before they run.
 
-**Julian Geiger** · PSI — 19 November 2026
+**Julian Geiger, Alexander Goscinski** · PSI — 19 November 2026
 
 </div>
 <div style="flex: 0 0 310px">

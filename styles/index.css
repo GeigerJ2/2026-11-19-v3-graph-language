@@ -118,3 +118,11 @@
 .slidev-layout .verdict p {
   margin: 0;
 }
+
+/* Deck-wide density: the default type scale overflows dense slides. */
+.slidev-layout {
+  font-size: 15px;
+}
+.slidev-layout pre {
+  font-size: 0.82em;
+}
