@@ -1,7 +1,3 @@
-.slidev-layout pre {
-  line-height: 1.4;
-}
-
 /* Bullets: slate chevron marker, generous vertical rhythm. If a slide overflows
    because of the spacing, the slide has too much text on it. */
 .slidev-layout ul {
@@ -66,7 +62,7 @@
   text-align: center;
 }
 
-.title-hero h1 {
+.slidev-layout .title-hero h1 {
   font-size: 2.7rem;
   line-height: 1.15;
   margin-bottom: 1.4rem;
@@ -124,18 +120,59 @@
   font-size: 13px;
   line-height: 1.45;
 }
+.slidev-layout h1 {
+  font-size: 1.6rem;
+  margin-bottom: 0.6rem;
+}
 .slidev-layout ul > li,
 .slidev-layout ol > li {
   margin-bottom: 0.6em;
 }
-.slidev-layout pre {
-  font-size: 0.8em;
+/* Code size comes from `--slidev-code-font-size` and `--slidev-code-line-height`, which Slidev
+   applies with `!important`; a `font-size` on `pre` has no effect. seriph's `prism.css` gives
+   `code` a relative line height, so block code inherits the variable from `pre` instead. */
+.slidev-layout pre code {
+  line-height: inherit;
 }
-/* Side-by-side snippets share a top edge. */
-.two-columns {
-  align-items: start;
+.slidev-code-wrapper + ul,
+.slidev-code-wrapper + p {
+  margin-top: 0.9rem;
 }
-.two-columns pre {
-  font-size: 0.7em;
-  line-height: 1.35;
+
+/* Two columns under a full-width title: the code blocks share a top edge. Grid tracks default to
+   `min-width: auto`, so a long code line would widen its column; pin both to half. */
+.two-cols-header {
+  column-gap: 1.5rem;
+}
+.two-cols-header .col-left,
+.two-cols-header .col-right {
+  min-width: 0;
+}
+
+/* Code in both columns. */
+.dense {
+  --slidev-code-font-size: 9.5px;
+  --slidev-code-line-height: 13px;
+}
+
+/* MultiplyAdd comparison: the full WorkChain (about 45 lines) fits the slide height. */
+.side-by-side {
+  padding-top: 1.75rem;
+  padding-bottom: 1.75rem;
+  --slidev-code-font-size: 8.5px;
+  --slidev-code-line-height: 10.5px;
+}
+
+/* Provenance diagram, with its caption in the flow beneath it. */
+.slidev-layout img.provenance {
+  display: block;
+  margin: 0.5rem auto 0;
+  max-height: 15rem;
+}
+.slidev-layout .caption {
+  margin: 0.4rem 0 0;
+  font-size: 0.68rem;
+  line-height: 1.45;
+  text-align: center;
+  opacity: 0.55;
 }
