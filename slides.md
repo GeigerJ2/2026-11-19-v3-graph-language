@@ -19,14 +19,45 @@ colorSchema: light
 </div>
 
 ---
+layout: two-cols
+---
 
 # Why: orchestration should read like the science
 
-- Workflows spell orchestration as machinery: outline steps, submits, a `self.ctx` dict.
-- Machinery fails where tests don't look: an unset `ctx` value crashes at runtime.
-- Graphs keep the science and drop the machinery: plain Python, checked before it runs.
+Same multiply-add, as a `WorkChain` and as a graph.
 
----
+::left::
+
+```python
+class MultiplyAddWorkChain(WorkChain):
+    @classmethod
+    def define(cls, spec):
+        super().define(spec)
+        spec.input('x', valid_type=Int)
+        spec.input('y', valid_type=Int)
+        spec.input('z', valid_type=Int)
+        spec.output('result', valid_type=Int)
+        spec.outline(cls.compute)
+
+    def compute(self):
+        product = multiply(
+            self.inputs.x, self.inputs.y)
+        self.out('result', add(
+            product, self.inputs.z))
+```
+
+::right::
+
+```python
+@graph
+def multiply_add(x: int, y: int,
+                 z: int) -> int:
+    product = multiply(x=x, y=y)
+    return add(x=product, y=z)
+```
+
+The graph drops the spec, the outline, and the `ctx` bookkeeping — and `build()` checks it before anything runs.
+
 
 # Caught before submission
 
