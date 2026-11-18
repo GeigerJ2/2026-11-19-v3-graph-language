@@ -19,6 +19,23 @@ colorSchema: light
 </div>
 
 ---
+
+# Contents
+
+1. Motivation
+2. Separating build and run time
+3. Control flow
+4. Data flow
+5. Interfaces and reuse
+6. Case study
+
+---
+layout: section
+---
+
+# Motivation
+
+---
 layout: two-cols-header
 layoutClass: side-by-side
 ---
@@ -91,22 +108,22 @@ def multiply_add(x: int, y: int, z: int, code: Code) -> int | float:
     return total.sum
 ```
 
-<!--
+---
 
-# Graphs compared with WorkChains
+# Advantages over WorkChains
 
 - **Less code:**
-  - The function signature replaces `spec`.
-  - The `@graph` function body replaces outline steps.
-  - Named values replace `ctx` bookkeeping.
-- **Validation before launch:** `build()` checks wiring, types, and contracts without running tasks or creating nodes.
-- **Definition in scripts and notebooks:**
+  - The function signature replaces `spec.input` and `spec.output`.
+  - The function body replaces the outline and its step methods.
+  - Named values replace `submit`, `ToContext`, and `self.ctx`.
+- **Static checks before launch:** `build()` checks names, wiring, and types without running tasks, and reports the offending source line.
+- **No plugin infrastructure:**
+  - Graphs are defined in modules, scripts, or notebooks, without entry points or packaging.
   - Each submission carries the graph structure and a pickled copy of every task.
-  - A submitted WorkChain class must be importable by the daemon.
-- **Provenance:**
-  - Work in a task records its inputs and outputs as nodes and links in the provenance graph.
-  - Inline operations run inside the graph process and are not recorded there.
--->
+- **Daemon execution:** one `GraphProcess`, recorded as a `GraphNode`.
+- **Concurrency from data flow:** the graph process submits every task whose inputs are ready.
+- **Declared failures as values:** `Result[..., Errors]` outputs branch and retry in the graph body.
+- **Reuse:** `task(...)` wraps existing CalcJobs and WorkChains; graphs nest as subgraphs.
 
 ---
 
@@ -160,13 +177,25 @@ def multiply_add(
 
 ---
 
+# Graph body and task code
+
+| | `@task` | `@graph` body |
+| --- | --- | --- |
+| Role | Computation | Orchestration |
+| Language | Arbitrary Python | Limited Python subset |
+| Validation | Ports at declaration; body at runtime | Wiring at build; values at runtime |
+| Interpreter | Python | AiiDA |
+| Process | Separate AiiDA process per call | Same graph process |
+| Parallelism | Independent calls can use separate workers | Submits all ready calls before waiting |
+| Provenance | Data inputs and outputs are nodes | Inline state is checkpointed |
+
+---
+
+<!-- Original slide by Alexander Goscinski (934314f), kept for discussion. -->
+
 # Graph language vs. task code
 
-@Julian This is slop but i wanted to create a slide that explains the difference between the two without going into details: 
-
-graph: aiida interpreted (limited subset of python) / task: python interpreted (arbitrary python)
-
-graph: same aiida process (not parallelizable) / task: new aiida process (parallelizable)
+@Julian This is slop but i wanted to create a slide that explains the difference between the two without going into details:
 
 <div class="code-boundaries">
 <pre class="code-boundaries-source"><code><span class="code-boundaries-graph">@graph
@@ -184,11 +213,17 @@ def multiply(x: int, y: int) -&gt; int:
     <span class="code-boundaries-task">return x * y</span></code></pre>
 <div class="code-boundaries-label code-boundaries-task-label">
 <span class="code-boundaries-pointer">←</span>
-<div><strong>Task call &amp; body</strong><p>Python · arbitrary Python code</p><b>New AiiDA process per call</b><p>Can run on different daemon workers*</p></div>
+<div><strong>Task call &amp; body</strong><p>Python · arbitrary Python</p><b>Separate AiiDA process per call</b><p>Independent calls: separate workers*</p></div>
 </div>
 </div>
 
-<div class="code-boundaries-note"><code>add_calc = task(ArithmeticAddCalculation)</code><br/>* All ready tasks are submitted before waiting; available daemon workers can execute them in parallel.<br/>Here, addition depends on multiplication, so these two task calls run in sequence.</div>
+<div class="code-boundaries-note"><code>add_calc = task(ArithmeticAddCalculation)</code><br/>* Ready tasks can run on separate daemon workers. Here, addition waits for multiplication.</div>
+
+---
+layout: section
+---
+
+# Separating build and run time
 
 ---
 layout: two-cols-header
@@ -196,8 +231,6 @@ layoutClass: dense
 ---
 
 # Debugging WorkChains
-
-The spec is valid, but one execution path leaves a context value unset.
 
 ::left::
 
@@ -235,14 +268,13 @@ class ConditionalCtxChain(WorkChain):
 
 ::right::
 
-- `flag=True`: `add_one` runs, then `finish`; `result` is `value + 1`.
-- `flag=False`: `add_one` is skipped. The process excepts at runtime, in `finish`, one step after the cause:
+- `flag=True`: result is `value + 1`.
+- `flag=False`: `finish` raises:
 
 ```text
 AttributeError: 'AttributeDict' object has no attribute 'total'
 ```
 
-- A test of only `flag=True` passes; the bug surfaces when a run takes the other path.
 
 ---
 layout: two-cols-header
@@ -250,8 +282,6 @@ layoutClass: dense
 ---
 
 # Debugging graphs
-
-The same bug in a graph fails when `build()` is called, before any launch.
 
 ::left::
 
@@ -300,12 +330,12 @@ GraphLanguageError: broken.py:11:5: __main__:broken:
     ^
 ```
 
-- The error names the cause (the binding missing on the `else` path), the source line, and the column.
-- `build()` needs no profile, inputs, or launch, so a test or notebook cell catches the bug.
+- Missing binding: source line, column, suggested fixes.
+- `build()`: no profile or inputs.
 
 <div class="verdict">
 
-`build()` checks wiring, not task bodies; runtime tests remain necessary.
+Task bodies still need runtime tests.
 
 </div>
 
@@ -313,30 +343,34 @@ GraphLanguageError: broken.py:11:5: __main__:broken:
 
 # Validation at build, launch, and run time
 
-Each stage checks what is known at that point.
+<br>
 
 **Build**
 
-- `build()` checks syntax, wiring, and static contracts without running tasks or creating nodes.
-- Errors name the source line and column.
+- Syntax, wiring, contracts; no execution or nodes.
+- Source line, column, suggested fixes.
 
 **Launch**
 
-- Fills inputs and defaults, and binds `runtime_config` per placement.
-- Rejects unknown placements and missing execution inputs, naming the placement.
+- Inputs, defaults, per-placement `runtime_config`.
+- Errors identify invalid placements or missing execution inputs.
 
 **Run**
 
-- Re-checks branch conditions, fails tasks with missing outputs, and maps declared failures to error arms.
-- Checkpoints finished task nodes, scope progress, and inline values; a restarted graph reuses finished work.
+- Condition types, required outputs, declared failures.
+- Restarts restore progress and inline state; completed tasks are reused.
+
+---
+layout: section
+---
+
+# Control flow
 
 ---
 layout: two-cols-header
 ---
 
-# Branch on a flag
-
-One graph process evaluates the branch and starts one task process.
+# Branching
 
 ::left::
 
@@ -351,9 +385,9 @@ def add(x: int, y: int) -> int:
     return x + y
 ```
 
-- The `GraphProcess` (stored as a `GraphNode`) evaluates `flag` and starts the selected task.
-- The task runs as its own process (`CalcFunctionNode`), executes its Python body, and creates the result node.
-- Separate processes are not separate workers: daemon execution may use different workers; a local run uses one interpreter.
+- Graph tests `flag`; only the selected task runs.
+- Task: `CalcFunctionNode`, with a stored result.
+- Local: one interpreter. Daemon: workers may differ.
 
 ::right::
 
@@ -377,13 +411,13 @@ def choose(x: int, flag: bool) -> int:
 
 <div class="caption">
 
-Provenance of a local run (`x=10, flag=True → result=11`), rendered by `aiida.tools.visualization.Graph` from stored nodes and links: declared input names are preserved; `CREATE` and `RETURN` share one result node. Node identifiers are illustrative.
+Local run: `x=10, flag=True → result=11`. Illustrative node IDs.
 
 </div>
 
-- The graph run is one process node; branch arms, loop iterations, nested graphs, and map items create no intermediate process nodes.
-- Each task run is a child process node, with a call link named after its placement, such as `branch_1__add`.
-- The task creates the result node (`CREATE`); the graph returns the same node (`RETURN`).
+- Branches, loops, subgraphs, maps share one graph process.
+- Separate task processes; hierarchical call labels (`branch_1__add`).
+- Task creates (`CREATE`); graph returns (`RETURN`) the same node.
 
 ---
 layout: two-cols-header
@@ -429,8 +463,8 @@ def choose_scaled(value: int, flag: bool) -> int:
     return add(x=chosen, y=0)
 ```
 
-- A called graph runs as a scope of the same graph process; it creates no child workflow node.
-- `x if condition else y` runs only the selected side. Here both sides are inline arithmetic, so the branch itself creates no process.
+- Subgraphs share the graph process.
+- Conditional expressions evaluate only the selected side.
 
 ---
 layout: two-cols-header
@@ -479,9 +513,9 @@ def ratio_or_zero(numerator: float, denominator: float) -> float:
     return selected
 ```
 
-- The call unpacks into `(value, error)`; exactly one of them is present.
-- A declared failure sets the task's exit status but counts as completed, so the graph branches on it and finishes successfully.
-- Undeclared failures and exceptions fail the graph with `ERROR_TASK_FAILED`.
+- `(value, error)`: exactly one is present.
+- Declared error: nonzero task status, available to the graph.
+- Other failures: graph exits with `ERROR_TASK_FAILED`.
 
 ---
 layout: two-cols-header
@@ -489,8 +523,6 @@ layoutClass: dense
 ---
 
 # Retrying a declared failure
-
-Retry only the declared failure, and stop when the retry budget is used.
 
 ::left::
 
@@ -529,9 +561,16 @@ def restartable(x: int, max_retries: int, attempt: int = 0) -> int:
     return value
 ```
 
-- `error is StepErrors.UNSTABLE` retries only that member; any other outcome ends the loop.
-- `attempt` starts at 0; `max_retries` counts repeats after the first call.
-- The counter is inline state, not a child process. `ensure` fails the graph when every attempt failed.
+- `UNSTABLE`: retry within budget.
+- `max_retries`: repeats after the initial call.
+- Loop iterations run sequentially.
+- Counter: inline. All attempts failed: `ensure` fails the graph.
+
+---
+layout: section
+---
+
+# Data flow
 
 ---
 layout: two-cols-header
@@ -539,8 +578,6 @@ layoutClass: dense
 ---
 
 # Parallel map and reduction
-
-Expand each structure independently; average the volumes after all items finish.
 
 ::left::
 
@@ -584,14 +621,13 @@ def mean_expanded_volume(structures: DataList) -> float:
     return mean_cell_volume(structures=expanded)
 ```
 
-- `par_map` applies a one-input task to every element of a `DataList`; `for` loops belong in `@task` bodies.
-- All items start before the graph waits; the result keeps the element order, and a collector task builds the container.
+- `par_map`: one call per item, all submitted before waiting.
+- Collector stores results in input order.
+- `for` loops: task bodies only.
 
 ---
 
 # Inline collections
-
-Comprehensions and indexing over typed lists and mappings run inside the graph process.
 
 ```python
 from aiida.engine import graph, task
@@ -608,8 +644,9 @@ def scaled_filtered(values: list[int], scale: int) -> int:
     return sum_values(values=scaled)
 ```
 
-- `list[T]` and `dict[str, T]` annotations give every element a declared type; inline results create no process and no node.
-- A root graph returns task outputs, so `sum_values` stores the result computed from the inline list.
+- `list[T]` and `dict[str, T]` declare element types.
+- Inline expressions run in the graph process; values are checkpointed.
+- `sum_values` stores the scientific result.
 
 ---
 layout: two-cols-header
@@ -629,8 +666,8 @@ def add(x: int, y: int) -> int:
     return x + y
 ```
 
-- `.alias('name')` names one placement. Calling a task twice without aliases fails `build()`.
-- `partial(add, y=y)` binds inputs once; each call places `add` independently. `partial` needs no import in a graph body.
+- Placement: one call site; repeated calls need unique aliases.
+- `partial`: shared input bindings; no import.
 
 ::right::
 
@@ -649,13 +686,17 @@ def add_shifted(x: int, y: int) -> int:
 ```
 
 ---
+layout: section
+---
+
+# Interfaces and reuse
+
+---
 layout: two-cols-header
 layoutClass: dense
 ---
 
 # Structured inputs with PortModel
-
-One schema declares nested ports, defaults, and help text for tasks and graphs.
 
 ::left::
 
@@ -693,8 +734,8 @@ def configured(volume: float, settings: Settings) -> float:
 run_get_node(configured, volume=10.0, settings={'scaling': {}})
 ```
 
-- Each field becomes its own port and input node: `settings.scaling.factor` → `Float(1.05)`, `settings.label` → `Str('demo')`.
-- `settings={'scaling': {}}` fills the nested defaults; the result is `11.57625`.
+- Fields become input nodes: `Float(1.05)`, `Str('demo')`.
+- Empty `scaling` uses defaults; result: `11.57625`.
 
 ---
 layout: two-cols-header
@@ -702,8 +743,6 @@ layoutClass: dense
 ---
 
 # Pydantic models as port namespaces
-
-`BaseModel` declarations map to the same typed port namespaces as `PortModel`.
 
 ::left::
 
@@ -745,9 +784,10 @@ run_get_node(
 )
 ```
 
-- Nested models, defaults, and `Field(description=...)` help text become ports; leaves accept `str`, `int`, `float`, `bool`, and their optional forms.
-- Tasks receive attribute-accessible mappings, not model instances; model methods are unavailable.
-- AiiDA ports check types. Validators and field aliases are rejected at declaration; check values inside the `@task`.
+- Nested ports, defaults, help text.
+- Fields: `str`, `int`, `float`, `bool`, optionally `None`.
+- Task inputs: attribute-accessible mappings, without model methods.
+- Validators and aliases rejected; value checks belong in tasks.
 
 ---
 layout: two-cols-header
@@ -755,8 +795,6 @@ layoutClass: dense
 ---
 
 # CalcJob and WorkChain tasks
-
-Wrap the process class with `task(...)`, then wire its named inputs and outputs.
 
 ::left::
 
@@ -803,20 +841,26 @@ outputs, node = run_get_node(
 )
 ```
 
-- `multiply_add` keeps its outline and children and computes `x * y + z`; `add_calc` adds `z` to that result.
-- The graph only connects them and returns the existing `sum` node; both run as ordinary child processes with provenance.
-- `code` and `metadata` are execution settings: they travel under `runtime_config`, separate from the scientific inputs.
+::bottom::
+
+- `task(...)`: existing CalcJobs and WorkChains, unchanged.
+- Graph returns the CalcJob's existing `sum` node.
+- `runtime_config`: `code`, `metadata`.
+
+---
+layout: section
+---
+
+# Koopmans case study
 
 ---
 
 # Koopmans case study
 
-A koopmans developer ported a WorkGraph workflow to the graph language and reported what it lacked.
-
-- The workflow runs `Wannier90WorkChain` once per projection block, with the same structure, k-point grid, and band k-points for every block, then merges the Hamiltonians.
-- WorkGraph: a Python `for` loop over the blocks makes one call per block.
-- Graph language: `par_map` over the blocks replaces the loop.
-- The first port needed helper tasks for two things the language now covers: inputs shared by all mapped calls, and list arithmetic on the grid.
+- One `Wannier90WorkChain` per block, then merge Hamiltonians.
+- Shared structure, k-point grid, band k-points.
+- WorkGraph `for` → `par_map`.
+- Feedback: shared inputs (`partial`), inline grid arithmetic.
 
 ---
 layout: two-cols-header
@@ -870,9 +914,9 @@ configured = partial(
 results = par_map(configured, blocks)
 ```
 
-- `partial` fixes the shared inputs; `par_map` maps the remaining `block` input.
-- Shared nodes travel as ordinary input wires, so every `Wannierize` run links to the original structure.
-- Mapping a `DataDict` keeps its keys and insertion order.
+- `partial`: shared inputs; `par_map`: one `block` per call.
+- Shared node identities preserved.
+- `DataDict`: keys and insertion order preserved.
 
 ---
 layout: two-cols-header
@@ -904,14 +948,14 @@ mesh = scale_grid(grid=grid, factor=factor)
 mesh = [n * factor for n in grid]
 ```
 
-- The comprehension runs inside the graph process: no task, no node, and its value is checkpointed.
-- Typed `list[T]` and `dict[str, T]` ports support indexing and comprehensions.
+- Comprehension: same graph process, checkpointed value.
+- `list[T]` and `dict[str, T]`: indexing and comprehensions.
 
 ---
 
 # Koopmans case study: open points
 
-- `par_map` needs an `orm.DataDict` or `orm.DataList`, not a typed Python mapping such as `dict[str, Block]`.
-- Inline `sum(...)`, generator expressions, and `tuple(...)` are unsupported, so `count_wann` stays a task.
-- Positivity and grid-length constraints are runtime checks in a task, not annotations.
-- Per-item metadata, such as one call link label per block, is unsupported; `.alias(...)` names a placement, not a map item.
+- Map inputs: `DataDict`, `DataList`; typed Python mappings unsupported.
+- Inline `sum`, generators, `tuple` unsupported; `count_wann` stays a task.
+- Positivity, grid length: runtime checks in tasks.
+- Per-item metadata unsupported; `.alias(...)` names the whole map.
