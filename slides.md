@@ -106,43 +106,57 @@ def multiply_add(x: int, y: int, z: int, code: Code) -> int | float:
 - **Provenance:**
   - Work in a task records its inputs and outputs as nodes and links in the provenance graph.
   - Inline operations run inside the graph process and are not recorded there.
-
 -->
 
----
-layout: two-cols-header
 ---
 
 # WorkChain concepts in a graph
 
-Each WorkChain concept has a graph counterpart; the structure is fixed when the graph is built.
-
-::left::
-
-**Declaration**
-
-- `spec.input` and `spec.output` become function parameters and the return annotation, checked by `build()`.
-- `valid_type=Int` and `.value` unwrapping become annotations such as `x: int`; launch converts plain values to nodes, and tasks receive Python values.
-- `spec.outline` steps become the `@graph` body: `if_` becomes `if`, `while_` becomes `while`.
-- `spec.exit_code` becomes `Result[..., Errors]` with `Err(...)`; declared failures branch and retry in the graph.
-`**`.
-
-::right::
-
-**Execution**
-
-- `self.submit(...)` and `ToContext` have no counterpart: the engine submits each placement once its inputs exist and waits for its outputs.
-- `self.ctx` becomes named values, carried loop state, and inline values, checkpointed without stored nodes.
-- `self.out(...)` becomes `return`; the graph returns existing nodes.
-- Call link labels come from placement names, such as `branch_1__add` or `.alias('scf')`.
-
-::bottom::
-
-<div class="verdict">
-
-Existing CalcJob and WorkChain classes run as tasks without changes.
-
+<div class="concept-map concept-comparison">
+<div class="concept-heading">WorkChain<small></small></div>
+<div></div>
+<div class="concept-heading">Graph
+  <pre class="concept-code"><code>add_calc = task(ArithmeticAddCalculation)</code></pre>
 </div>
+
+<pre class="concept-code"><code><span class="concept-function">@calcfunction</span>
+def multiply(x, y):
+    return x * y</code></pre>
+<div class="concept-arrow concept-function"><strong>Calculation</strong><span>⟶</span></div>
+<pre class="concept-code"><code><span class="concept-function">@task</span>
+def multiply(<span class="concept-ports">x: int, y: int</span>) -&gt; <span class="concept-ports">int</span>:
+    return x * y</code></pre>
+
+<pre class="concept-code"><code>        <span class="concept-ports">spec.input('x', valid_type=Int)</span>
+        <span class="concept-ports">spec.input('y', valid_type=Int)</span>
+        <span class="concept-ports">spec.input('z', valid_type=Int)</span>
+        <span class="concept-ports">spec.output('result', valid_type=Int)</span></code></pre>
+<div class="concept-arrow concept-ports"><strong>Ports &amp; types</strong><span>⟶</span></div>
+<pre class="concept-code"><code>@graph
+def multiply_add(
+    <span class="concept-ports">x: int, y: int, z: int</span>
+) -&gt; <span class="concept-ports">int</span>:</code></pre>
+
+<pre class="concept-code"><code>        <span class="concept-task">spec.outline(cls.multiply, cls.add, cls.result)</span>
+
+    def multiply(self):
+        <span class="concept-state">self.ctx.product</span> = <span class="concept-function">multiply(</span>
+            <span class="concept-function">self.inputs.x, self.inputs.y)</span>
+    def add(self):
+        future = <span class="concept-task">self.submit(ArithmeticAddCalculation,</span>
+            <span class="concept-task">x=self.ctx.product, y=self.inputs.z)</span>
+        return ToContext(<span class="concept-state">addition</span>=future)</code></pre>
+<div class="concept-arrow concept-task"><strong>Steps &amp; submit</strong><span>⟶</span><strong class="concept-state">Context → values</strong></div>
+<pre class="concept-code"><code>    <span class="concept-state">product</span> = <span class="concept-function">multiply(x=x, y=y)</span>
+    <span class="concept-state">addition</span> = <span class="concept-task">add_calc(x=product, y=z)</span></code></pre>
+
+<pre class="concept-code"><code>    def result(self):
+        <span class="concept-return">self.out('result',</span>
+                 self.ctx.<span class="concept-state">addition</span>.outputs.sum<span class="concept-return">)</span></code></pre>
+<div class="concept-arrow concept-return"><strong>Outputs</strong><span>⟶</span></div>
+<pre class="concept-code"><code>    <span class="concept-return">return</span> <span class="concept-state">addition</span>.sum</code></pre>
+</div>
+
 
 ---
 layout: two-cols-header
