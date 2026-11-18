@@ -10,9 +10,7 @@ colorSchema: light
 
 # Graph language for aiida-core v3
 
-Plain Python functions instead of process outlines. Checked before they run.
-
-**Julian Geiger, Alexander Goscinski** · PSI — 19 November 2026
+**Julian Geiger, Alexander Goscinski** · MSD GM · PSI — 19 November 2026
 
 </div>
 <div style="flex: 0 0 310px">
