@@ -121,10 +121,15 @@
 
 /* Deck-wide density: the default type scale overflows dense slides. */
 .slidev-layout {
-  font-size: 15px;
+  font-size: 13px;
+  line-height: 1.45;
+}
+.slidev-layout ul > li,
+.slidev-layout ol > li {
+  margin-bottom: 0.6em;
 }
 .slidev-layout pre {
-  font-size: 0.82em;
+  font-size: 0.8em;
 }
 /* Viewer ignores colorSchema: force the light scheme. */
 html {
@@ -139,6 +144,6 @@ html {
   align-items: start;
 }
 .two-columns pre {
-  font-size: 0.72em;
-  line-height: 1.4;
+  font-size: 0.7em;
+  line-height: 1.35;
 }
