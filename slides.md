@@ -761,7 +761,7 @@ outputs, node = run_get_node(
 
 ---
 
-# Case study: koopmans Wannierization
+# Koopmans case study
 
 A koopmans developer ported a WorkGraph workflow to the graph language and reported what it lacked.
 
@@ -775,7 +775,7 @@ layout: two-cols-header
 layoutClass: dense
 ---
 
-# Case study: shared inputs for mapped calls
+# Koopmans case study: shared inputs for mapped calls
 
 ::left::
 
@@ -831,7 +831,7 @@ layout: two-cols-header
 layoutClass: dense
 ---
 
-# Case study: list arithmetic inline
+# Koopmans case study: list arithmetic inline
 
 ::left::
 
@@ -861,7 +861,7 @@ mesh = [n * factor for n in grid]
 
 ---
 
-# Case study: open points
+# Koopmans case study: open points
 
 - `par_map` needs an `orm.DataDict` or `orm.DataList`, not a typed Python mapping such as `dict[str, Block]`.
 - Inline `sum(...)`, generator expressions, and `tuple(...)` are unsupported, so `count_wann` stays a task.
