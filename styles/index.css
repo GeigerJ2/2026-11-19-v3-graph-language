@@ -1,104 +1,120 @@
-/* Neutral typography and code cards inherited from the Figma PDF. */
-.slidev-layout.aiida-slide {
-  background: #fff;
-  color: #171717;
-  padding: 48px 54px 34px;
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: 20px;
+.slidev-layout pre {
+  line-height: 1.4;
+}
+
+/* Bullets: slate chevron marker, generous vertical rhythm. If a slide overflows
+   because of the spacing, the slide has too much text on it. */
+.slidev-layout ul {
+  list-style: none;
+  padding-left: 1.25em;
+}
+
+.slidev-layout ul > li {
+  position: relative;
+  margin-bottom: 1.15em;
+  line-height: 1.5;
+}
+
+.slidev-layout ul > li:last-child {
+  margin-bottom: 0;
+}
+
+.slidev-layout ul > li::before {
+  content: '\203A';
+  position: absolute;
+  left: -1.05em;
+  top: 0;
+  color: #64748b;
+  font-weight: 600;
+  font-size: 0.95em;
+  line-height: inherit;
+}
+
+/* Nested lists sit tighter, with a lighter marker. */
+.slidev-layout ul ul > li {
+  margin-bottom: 0.5em;
+}
+
+.slidev-layout ul ul > li::before {
+  color: #94a3b8;
+  font-weight: 400;
+}
+
+.slidev-layout ol > li {
+  margin-bottom: 1.15em;
+  line-height: 1.5;
+}
+
+/* Reference footnotes: pinned to the bottom of the slide, out of the flow. */
+.slidev-layout .refs {
+  position: absolute;
+  bottom: 1.4rem;
+  left: 3.5rem;
+  right: 3.5rem;
+  font-size: 0.68rem;
+  line-height: 1.45;
+  opacity: 0.55;
+}
+
+.slidev-layout .refs a {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid currentColor;
+}
+
+.slidev-layout .refs.center {
+  text-align: center;
+}
+
+.title-hero h1 {
+  font-size: 2.7rem;
+  line-height: 1.15;
+  margin-bottom: 1.4rem;
+}
+
+.slidev-layout .compact ul > li {
+  margin-bottom: 0.5em;
+}
+
+.slidev-layout ul > li > ul {
+  margin-top: 0.7em;
+}
+
+/* Two-column mapping table: as tight as it reads, since it carries eight rows plus a note. */
+.slidev-layout .moved table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
   line-height: 1.35;
 }
-.aiida-slide h1 {
-  margin: 0 0 10px;
-  font-size: 36px;
-  line-height: 1.15;
-  font-weight: 600;
-  letter-spacing: -0.7px;
-}
-.aiida-slide h1 + p {
-  margin: 0 0 25px;
-  color: #333;
-  font-size: 20px;
-}
-.aiida-slide p { margin: 0 0 13px; }
-.aiida-slide strong { font-weight: 600; }
-.aiida-slide .eyebrow {
-  position: absolute;
-  top: 20px;
-  right: 54px;
-  font-size: 13px;
-  letter-spacing: 0.09em;
-}
-.aiida-slide .columns {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  align-items: start;
-  gap: 28px;
-}
-.aiida-slide .columns.wide-left {
-  grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
-}
-.aiida-slide .columns > div { min-width: 0; }
-.aiida-slide .panel {
-  padding: 14px 17px;
-  margin-bottom: 16px;
-  border-radius: 0;
-  background: #f5f5f5;
-}
-.aiida-slide .panel > p:first-child {
-  font-size: 17px;
-  font-weight: 600;
-  margin-bottom: 10px;
-}
-.aiida-slide .panel > :last-child { margin-bottom: 0; }
-.aiida-slide .slidev-code-wrapper { margin: 0; }
-.aiida-slide pre,
-.aiida-slide pre.slidev-code {
-  padding: 0 !important;
-  border: 0 !important;
-  border-radius: 0 !important;
-  background: transparent !important;
-  box-shadow: none !important;
-  font-family: 'DejaVu Sans Mono', 'SFMono-Regular', Consolas, monospace !important;
-  font-size: 15px !important;
-  line-height: 1.5 !important;
-  tab-size: 4;
-}
-.aiida-slide :not(pre) > code {
-  color: inherit;
-  background: transparent;
-  padding: 0;
-  font-size: 0.87em;
-}
-.aiida-slide .callout {
-  margin: 18px 0 12px;
-  font-size: 20px;
-}
-.aiida-slide .callout strong {
-  display: block;
-  margin-bottom: 7px;
-  font-size: 23px;
-}
-.aiida-slide .footer { margin-top: 16px; font-size: 17px; }
-.aiida-slide .footer p { margin-bottom: 7px; }
-.aiida-slide .fanout { font-size: 17px; }
-.aiida-slide .fanout .panel { margin: 0; background: #fff; }
-.aiida-slide .fanout p { margin: 0; }
 
-/* Slide 1: code and execution roles above the recorded provenance. */
-.slidev-layout.execution-slide { padding-top: 32px; }
-.execution-slide h1 + p { margin-bottom: 8px; }
-.execution-slide .native-provenance { display: block; width: 100%; height: 205px; object-fit: contain; margin: 0; }
-.aiida-slide .execution-overview { gap: 36px; }
-.aiida-slide .execution-overview .panel { padding: 10px 14px; margin-bottom: 10px; }
-.aiida-slide .execution-overview .panel > p:first-child { margin-bottom: 5px; font-size: 16px; }
-.aiida-slide .execution-overview pre.slidev-code { font-size: 14px !important; line-height: 1.2 !important; }
-.aiida-slide .execution-overview pre.slidev-code code { line-height: 1.2 !important; }
-.aiida-slide .execution-roles { font-size: 16px; line-height: 1.25; }
-.aiida-slide .execution-roles p { margin-bottom: 8px; }
-.aiida-slide .execution-role { border: 1px solid #888; padding: 8px 14px; }
-.aiida-slide .execution-role > :last-child { margin-bottom: 0; }
-.aiida-slide .execution-arrow { text-align: center; margin: 4px 0; font-size: 14px; }
-.aiida-slide .execution-role + p { margin-top: 12px; }
-.aiida-slide .provenance-section { margin-top: 8px; border-top: 1px solid #ddd; padding-top: 9px; }
-.aiida-slide .provenance-section > p { font-size: 18px; margin-bottom: 7px; }
-.aiida-slide .provenance-note { margin-top: 4px; font-size: 13px; color: #444; }
+.slidev-layout .moved th {
+  text-align: left;
+  font-weight: 600;
+  opacity: 0.6;
+  padding: 0 0.9rem 0.35rem 0;
+}
+
+.slidev-layout .moved td {
+  padding: 0.22rem 0.9rem 0.22rem 0;
+  border-top: 1px solid rgba(100, 116, 139, 0.16);
+  vertical-align: top;
+}
+
+.slidev-layout .moved td:last-child,
+.slidev-layout .moved th:last-child {
+  padding-right: 0;
+}
+
+/* The one thing on a slide that is being proposed rather than reported. */
+.slidev-layout .verdict {
+  margin-top: 1.4rem;
+  padding: 0.7rem 1rem;
+  border-left: 3px solid #64748b;
+  background: rgba(100, 116, 139, 0.07);
+  line-height: 1.45;
+}
+
+.slidev-layout .verdict p {
+  margin: 0;
+}

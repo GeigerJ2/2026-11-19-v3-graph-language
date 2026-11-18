@@ -1,29 +1,142 @@
 ---
-theme: default
-title: AiiDA graph language for authoring workflows
-aspectRatio: 16/9
-canvasWidth: 1280
-colorSchema: light
-transition: none
-mdc: false
-download: false
-lineNumbers: false
-highlighter: shiki
-drawings:
-  persist: false
-layout: default
-class: aiida-slide execution-slide
+theme: seriph
+title: Graph language for aiida-core v3
+transition: fade
 ---
 
-<div class="eyebrow">01 / 08</div>
+<div class="flex items-center gap-10" style="height: 100%">
+<div class="title-hero" style="flex: 1 1 auto">
+
+# Graph language for aiida-core v3
+
+Plain Python functions instead of process outlines. Checked before they run.
+
+**Julian Geiger** · PSI — 19 November 2026
+
+</div>
+<div style="flex: 0 0 310px">
+  <img src="/logos/aiida/logo_AiiDA.png" alt="AiiDA" style="height: 48px" />
+</div>
+</div>
+
+---
+
+# Why: orchestration should read like the science
+
+- Workflows today spell orchestration as process machinery: outline steps, explicit submits, resume state in a `self.ctx` dictionary.
+- That machinery can fail where no test looks: if one execution path never sets a `ctx` value, the workflow crashes at runtime with `AttributeError` — exactly on the path nobody ran.
+- The graph language keeps the science and drops the machinery. What follows is ordinary Python, checked before anything runs.
+
+---
+
+# Caught before submission
+
+A missing binding fails when the graph is built — no profile, no daemon, no run.
+
+```python
+@graph
+def broken(value: int, flag: bool) -> int:
+    if flag:
+        total = add(x=value, y=1)
+    return total
+
+broken.build()
+```
+
+The build error names the line:
+
+```text
+GraphLanguageError: bad.py:9:5: __main__:bad:
+  without an `else` arm the branch keeps the prior
+  binding, so `total` must be assigned before the
+  `if`; assign it first or add an `else` arm instead
+    if flag:
+    ^
+```
+
+<div class="verdict" >
+
+Invalid wiring fails during build(). Valid wiring still needs runtime tests.
+
+</div>
+
+---
+
+# Same workflow, less machinery
+
+Stepping toward a target: a `WorkChain` outline on the left, a graph on the right. Both compute the same thing.
+
+::left::
+
+**WorkChain: steps, submits, ctx**
+
+```python
+spec.outline(
+    cls.init,
+    while_(cls.has_steps_left)(
+        cls.step, cls.update),
+    cls.report)
+
+def step(self):
+    self.to_context(
+        stepped=self.submit(
+            StepToward,
+            value=self.ctx.value,
+            target=self.inputs.target))
+```
+
+::right::
+
+**Graph: plain control flow**
+
+```python
+@graph
+def converge(initial: int, target: int,
+             max_steps: int) -> dict:
+    value, attempts = initial, 0
+    while value != target \
+            and attempts < max_steps:
+        value = step_toward(
+            value=value, target=target)
+        attempts = attempts + 1
+    return report(value=value,
+                  attempts=attempts)
+```
+
+::
+
+```mermaid
+flowchart LR
+    A([initial]) --> B{target?}
+    B -->|no| C[step toward it]
+    C --> B
+    B -->|yes| D[report]
+```
+
+---
+
+# Where WorkChain concepts go
+
+Each WorkChain concept has a graph counterpart. Nothing structural is decided at run time.
+
+- `spec.input` / `spec.output` become function parameters and the return annotation, checked by `build()`.
+- `spec.outline` steps become straight-line code; `if_` becomes `if`, `while_` becomes `while`.
+- `submit` + `to_context` become a direct call; outputs arrive as named values.
+- `self.ctx` resume state becomes carried loop state and inline values, checkpointed without stored nodes.
+- `self.out(...)` becomes `return`: the graph returns existing nodes.
+- `spec.exit_code` becomes `Result[..., Errors]` with `Err(...)`; declared outcomes branch and retry in the graph.
+
+<div class="verdict" >
+
+Existing CalcJobs and WorkChains slot in as tasks, unchanged.
+
+</div>
+
+---
 
 # Control flow: orchestration and computation
 
 One graph process schedules one selected task process.
-
-<div class="columns execution-overview">
-<div>
-<div class="panel">
 
 **Ordinary Python — task body**
 
@@ -32,9 +145,6 @@ One graph process schedules one selected task process.
 def add(x: int, y: int) -> int:
     return x + y
 ```
-
-</div>
-<div class="panel">
 
 **Graph language — compiled orchestration**
 
@@ -48,161 +158,42 @@ def choose(x: int, flag: bool) -> int:
     return chosen
 ```
 
-</div>
-</div>
-<div class="execution-roles">
+A `GraphProcess` drives the graph, evaluates `flag`, and schedules the selected task. The task runs the Python body and creates the result node. Daemon execution may use different workers.
 
-**Execution model**
+<div class="refs center">
 
-<div class="execution-role">
-
-**Workflow: GraphProcess / GraphNode**
-
-Drives the graph, evaluates `flag`, and schedules the selected task.
-
-</div>
-<div class="execution-arrow">↓ calls the task process</div>
-<div class="execution-role">
-
-**Calculation: add / CalcFunctionNode**
-
-Executes the ordinary Python body and creates the result node.
+Recorded provenance of a local run (`x=10, flag=True → result=11`): declared input names are preserved; `CREATE` and `RETURN` share one result node. Node identifiers are illustrative.
 
 </div>
 
-**Separate processes ≠ separate workers.**
-
-Daemon execution may use different workers. The verified local run uses one interpreter, without daemon workers.
-
-</div>
-</div>
-
-<div class="provenance-section">
-
-**Verified provenance · x=10, flag=True → result=11**
-
-<img class="native-provenance" src="/assets/choose-provenance.svg" alt="AiiDA-generated provenance from a local run of choose: graph specification, x=10 and flag=True feed the graph process; one add calculation takes x and y=1, creates result=11, and the graph returns the same result node." />
-
-<div class="provenance-note">Generated by AiiDA's Graph visualizer from stored nodes and links. Declared input names are preserved; CREATE and RETURN share one result node.</div>
-
-</div>
+![AiiDA-generated provenance from stored nodes and links](/assets/choose-provenance.svg)
 
 ---
-layout: default
-class: aiida-slide
----
-
-<div class="eyebrow">02 / 08</div>
 
 # Retry: handle a declared failure
 
-Retry only the expected exit code, and stop when the retry budget is used.
-
-<div class="columns wide-left">
-<div>
-
-<div class="panel">
-
-**Example: bounded retry loop**
+Retry only the expected failure code, and stop when the retry budget is used.
 
 ```python
 @graph
 def restartable(x: int, max_retries: int,
                 attempt: int = 0) -> int:
     value, error = run_step(x=x, attempt=attempt)
-    while error is StepErrors.UNSTABLE and attempt < max_retries:
+    while error is not None and attempt < max_retries:
         attempt = attempt + 1
         value, error = run_step(x=x, attempt=attempt)
     checked = ensure(value=value)
     return value
 ```
 
-</div>
-
-</div>
-<div>
-
-**Task contract**
-
-`410 = UNSTABLE`
-
-`Result[int, StepErrors]` → `(value, error)`
-
-UNSTABLE + budget → retry
-`Ok(value)` → finish
-
-attempt starts at 0.
-max_retries counts repeats after the first call.
-
-</div>
-</div>
-
-<div class="callout">
-
-**Retry = expected failure AND remaining budget**
-
-ensure raises if all attempts fail. Unexpected failures stop the graph.
-The loop counter is inline state—not another child process.
-
-</div>
+- `Result[int, StepErrors]` unpacks into `(value, error)`; `UNSTABLE` (410) plus remaining budget retries, `Ok(value)` finishes.
+- The counter is inline state, not another child process. `ensure` fails the graph if all attempts failed.
 
 ---
-layout: default
-class: aiida-slide
----
-
-<div class="eyebrow">03 / 08</div>
 
 # Parallel map, then sequential reduction
 
-Apply expand_cell to each structure independently; average volumes after all complete.
-
-<div class="fanout" style="display: flex; align-items: center; gap: 8px; margin: 12px 0;">
-<div class="panel" style="padding: 6px 12px; border: 1px solid currentColor;">
-
-`DataList[StructureData]`
-
-</div>
-<div style="flex: 0 0 auto;">→</div>
-<div style="display: flex; flex-direction: column; gap: 4px;">
-<div class="panel" style="padding: 4px 12px; border: 1px solid currentColor;">
-
-`expand_cell(structure)`
-
-</div>
-<div class="panel" style="padding: 4px 12px; border: 1px solid currentColor;">
-
-`expand_cell(structure)`
-
-</div>
-<div class="panel" style="padding: 4px 12px; border: 1px solid currentColor;">
-
-`expand_cell(structure)`
-
-</div>
-</div>
-<div style="flex: 0 0 auto;">→</div>
-<div class="panel" style="padding: 6px 12px; border: 1px solid currentColor;">
-
-`mapped DataList`
-
-</div>
-<div style="flex: 0 0 auto;">→</div>
-<div class="panel" style="padding: 6px 12px; border: 1px solid currentColor;">
-
-`mean volume`
-
-</div>
-</div>
-
-Independent tasks run in parallel
-
-<div class="columns">
-<div>
-
-<div class="panel">
-
-**1. Fan-out: par_map inside the graph**
+Expand each structure independently; average volumes after all complete.
 
 ```python
 @graph
@@ -211,18 +202,7 @@ def mean_expanded_volume(
 ) -> float:
     expanded = par_map(expand_cell, structures)
     return mean_cell_volume(structures=expanded)
-```
 
-</div>
-
-</div>
-<div>
-
-<div class="panel">
-
-**2. Fan-in: a for-loop inside one task**
-
-```python
 @task
 def mean_cell_volume(structures: DataList) -> float:
     if not structures:
@@ -233,107 +213,37 @@ def mean_cell_volume(structures: DataList) -> float:
     return total / len(structures)
 ```
 
-</div>
-
-</div>
-</div>
-
-<div class="footer">DataList holds StructureData nodes. A for-loop is supported inside @task, not @graph.</div>
+- `par_map` fans one unary task out over an owned `DataList`; a `for`-loop is supported inside `@task`, not inside `@graph`.
+- All items dispatch before waiting; the result preserves order and the collector builds the container.
 
 ---
-layout: default
-class: aiida-slide
----
-
-<div class="eyebrow">04 / 08</div>
 
 # PortModel: declare a structured interface
 
-One schema defines nested ports, defaults and help text—for both tasks and graphs.
-
-<div class="columns">
-<div>
-
-<div class="panel">
-
-**Declare the namespace**
+One schema defines nested ports, defaults and help text — for both tasks and graphs.
 
 ```python
-from typing import Annotated
-from aiida.engine import PortField, PortModel
+from aiida.engine import PortModel
 
 class Scaling(PortModel):
-    factor: Annotated[
-        float, PortField(help='Cell scale factor.')
-    ] = 1.05
+    factor: Annotated[float, PortField(help='Cell scale factor.')] = 1.05
 
 class Settings(PortModel):
     scaling: Scaling
     label: str = 'demo'
-```
 
-</div>
-
-</div>
-<div>
-
-<div class="panel">
-
-**Use it as an input annotation**
-
-```python
 @task
-def scaled_volume(volume: float,
-                  settings: Settings) -> float:
+def scaled_volume(volume: float, settings: Settings) -> float:
     return volume * settings.scaling.factor ** 3
-
-@graph
-def configured(volume: float,
-               settings: Settings) -> float:
-    return scaled_volume(
-        volume=volume, settings=settings,
-    )
 ```
 
-</div>
-
-</div>
-</div>
-
-<div class="callout">
-
-**Each field becomes its own port and input node**
-
-`settings.scaling.factor → Float(1.05)` &nbsp;&nbsp;&nbsp;&nbsp; `settings.label → Str('demo')`
-
-</div>
-
-<div class="footer">
-
-`run_get_node(configured, volume=10.0, settings={'scaling': {}})`
-
-Defaults fill the nested fields. Result: 11.57625.
-
-</div>
-
+- Each field becomes its own input node; `settings={'scaling': {}}` fills the defaults (`11.57625` for volume `10.0`).
 
 ---
-layout: default
-class: aiida-slide
----
-
-<div class="eyebrow">05 / 08</div>
 
 # Pydantic: reuse the schema, not its runtime
 
-BaseModel declarations adapt to the same typed port namespaces as PortModel.
-
-<div class="columns wide-left">
-<div>
-
-<div class="panel">
-
-Equivalent schema using Pydantic
+`BaseModel` declarations adapt to the same typed port namespaces as `PortModel`.
 
 ```python
 from pydantic import BaseModel, Field
@@ -346,123 +256,45 @@ class PydanticSettings(BaseModel):
     label: str = 'demo'
 ```
 
-</div>
-
-**BaseModel → typed port namespace → per-field nodes**
-
-<div class="panel">
-
-Use PydanticSettings in the graph/task annotations
-
-```python
-run_get_node(configured_pydantic, volume=10.0,
-             settings={'scaling': {}})
-```
-
-</div>
-
-</div>
-<div>
-
-**Supported**
-
-Nested models, defaults, and Field(description=...) help text.
-Leaves: str, int, float, bool and their optional forms.
-
-**What tasks receive**
-
-Attribute-accessible mappings, not BaseModel instances.
-Model methods are unavailable.
-
-**Validation boundary**
-
-AiiDA ports check types. Aliases and decorated validators
-are rejected at declaration. Check values inside @task.
-
-</div>
-</div>
+- Nested models, defaults, and `Field(description=...)` help text work; leaves accept `str`, `int`, `float`, `bool` and their optional forms.
+- Tasks receive attribute-accessible mappings, not model instances. Validators and aliases are rejected at declaration; check values inside the `@task`.
 
 ---
-layout: default
-class: aiida-slide
----
-
-<div class="eyebrow">06 / 08</div>
 
 # Reuse existing CalcJobs and WorkChains
 
-Wrap the process class with task(...), then wire its named inputs and outputs.
-
-<div class="columns wide-left">
-<div>
-
-<div class="panel">
-
-AiiDA arithmetic examples; imports omitted
+Wrap the process class with `task(...)`, then wire its named inputs and outputs.
 
 ```python
 multiply_add = task(MultiplyAddWorkChain)
 add_calc = task(ArithmeticAddCalculation)
 
 @graph
-def integrated(x: int, y: int, z: int, code: Code) -> int | float:
-    prepared = multiply_add(x=x, y=y, z=z, code=code)
-    total = add_calc(x=prepared.result, y=z, code=code)
+def integrated(x: int, y: int, z: int) -> int | float:
+    prepared = multiply_add(x=x, y=y, z=z)
+    total = add_calc(x=prepared.result, y=z)
     return total.sum
-```
 
-</div>
-
-<div class="callout">WorkChain output → CalcJob input → existing output node</div>
-
-</div>
-<div>
-
-**WorkChain**
-
-Keeps its outline and children. Here it computes x × y + z.
-
-**CalcJob**
-
-Runs with a Code and scheduler. Here it adds z to the result.
-
-**The graph only connects them**
-
-Both remain normal child processes with provenance.
-
-</div>
-</div>
-
-<div class="panel">
-
-Scheduler options are launch configuration—not graph wiring
-
-```python
 outputs, node = run_get_node(
-    integrated, x=2, y=3, z=4, code=code,
-    task_metadata={'add_calc': {'options': options}},
+    integrated,
+    inputs={'x': 2, 'y': 3, 'z': 4},
+    runtime_config={
+        'add_calc': {
+            'code': code,
+            'metadata': {'options': options},
+        },
+    },
 )
 ```
 
-</div>
+- Execution settings travel separately from scientific inputs, under `runtime_config`.
+- Both stay normal child processes with provenance.
 
 ---
-layout: default
-class: aiida-slide
----
-
-<div class="eyebrow">07 / 08</div>
 
 # WorkChain: a missing context value
 
 A spec can be valid while a context value is missing on one execution path.
-
-<div class="columns wide-left">
-<div>
-
-<div class="panel">
-
-Relevant methods; input/output port declarations omitted
 
 ```python
 class ConditionalCtxChain(WorkChain):
@@ -484,47 +316,14 @@ class ConditionalCtxChain(WorkChain):
         self.out('result', self.ctx.total)
 ```
 
-</div>
-
-</div>
-<div>
-
-**Spec construction passes**
-
-The outline and ports are valid. No check proves ctx.total exists.
-
-**flag = True**
-
-`add_one → finish` `result = value + 1`
-
-**flag = False**
-
-`skip add_one → finish`
-
-`AttributeError: no attribute 'total'`
-
-</div>
-</div>
-
-<div class="footer">increment is a calcfunction. A test of only flag=True would miss this bug.</div>
+- `flag = True`: `add_one → finish`, `result = value + 1`.
+- `flag = False`: `add_one` skipped, `finish` raises `AttributeError: no attribute 'total'`. A test of only `flag=True` misses this bug.
 
 ---
-layout: default
-class: aiida-slide
----
 
-<div class="eyebrow">08 / 08</div>
-
-# Same bug: rejected before execution
+# Same bug: rejected before build
 
 Graph build checks both paths without running tasks or supplying inputs.
-
-<div class="columns">
-<div>
-
-<div class="panel">
-
-Bug: total is assigned on only one path
 
 ```python
 @graph
@@ -536,36 +335,11 @@ def broken(value: int, flag: bool) -> int:
 broken.build()
 ```
 
-</div>
+- `flag = False` leaves `total` with no binding: `GraphLanguageError: bind total before the if, or add an else arm`.
+- WorkChain: the skipped path fails at runtime. Graph: invalid wiring fails during build.
 
-<div class="panel">
+<div class="verdict" >
 
-Fix: also bind total on the else path
-
-```python
-    else:
-        total = add(x=value, y=2)
-```
+Catch the missing binding before submission. This checks wiring, not task-body correctness; runtime tests are still needed.
 
 </div>
-
-</div>
-<div>
-
-**Rejected by build()**
-
-**flag = False → total has no binding**
-
-GraphLanguageError: bind total before the if, or add an else arm.
-
-**The difference is when it fails**
-
-WorkChain: the skipped path fails at runtime.
-Graph: invalid wiring fails during build().
-
-**Catch the missing binding before submission.**
-
-</div>
-</div>
-
-<div class="footer">This checks wiring, not task-body correctness. Runtime tests are still needed.</div>
