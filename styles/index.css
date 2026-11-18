@@ -131,14 +131,6 @@
 .slidev-layout pre {
   font-size: 0.8em;
 }
-/* Viewer ignores colorSchema: force the light scheme. */
-html {
-  color-scheme: light;
-}
-.slidev-layout {
-  background: #fff;
-  color: #171717;
-}
 /* Side-by-side snippets share a top edge. */
 .two-columns {
   align-items: start;

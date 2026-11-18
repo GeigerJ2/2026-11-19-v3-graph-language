@@ -1,10 +1,8 @@
 ---
-
 theme: seriph
 title: Graph language for aiida-core v3
 transition: fade
 colorSchema: light
-
 ---
 
 <div class="flex items-center gap-10" style="height: 100%">
@@ -98,9 +96,6 @@ def multiply_add(x: int, y: int,
         code=code)
     return total.sum
 ```
-
-layout: default
-class: aiida-slide
 
 ---
 
