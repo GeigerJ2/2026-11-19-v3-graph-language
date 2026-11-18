@@ -159,6 +159,38 @@ def multiply_add(
 
 
 ---
+
+# Graph language vs. task code
+
+@Julian This is slop but i wanted to create a slide that explains the difference between the two without going into details: 
+
+graph: aiida interpreted (limited subset of python) / task: python interpreted (arbitrary python)
+
+graph: same aiida process (not parallelizable) / task: new aiida process (parallelizable)
+
+<div class="code-boundaries">
+<pre class="code-boundaries-source"><code><span class="code-boundaries-graph">@graph
+def multiply_add(x: int, y: int, z: int) -&gt; int:</span>
+    <span class="code-boundaries-graph">product =</span> <span class="code-boundaries-task">multiply(x=x, y=y)</span>
+    <span class="code-boundaries-graph">total =</span> <span class="code-boundaries-task">add_calc(x=product, y=z)</span>
+    <span class="code-boundaries-graph">return total.sum</span></code></pre>
+<div class="code-boundaries-label code-boundaries-graph-label">
+<span class="code-boundaries-pointer">←</span>
+<div><strong>Graph statements</strong><p>AiiDA runtime · limited Python subset</p><b>Same graph process</b></div>
+</div>
+
+<pre class="code-boundaries-source"><code><span class="code-boundaries-task">@task</span>
+def multiply(x: int, y: int) -&gt; int:
+    <span class="code-boundaries-task">return x * y</span></code></pre>
+<div class="code-boundaries-label code-boundaries-task-label">
+<span class="code-boundaries-pointer">←</span>
+<div><strong>Task call &amp; body</strong><p>Python · arbitrary Python code</p><b>New AiiDA process per call</b><p>Can run on different daemon workers*</p></div>
+</div>
+</div>
+
+<div class="code-boundaries-note"><code>add_calc = task(ArithmeticAddCalculation)</code><br/>* All ready tasks are submitted before waiting; available daemon workers can execute them in parallel.<br/>Here, addition depends on multiplication, so these two task calls run in sequence.</div>
+
+---
 layout: two-cols-header
 layoutClass: dense
 ---

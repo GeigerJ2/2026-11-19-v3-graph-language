@@ -235,6 +235,54 @@
 }
 .concept-note p { margin: 0; }
 
+/* Mark execution semantics directly on graph statements and task code. */
+.code-boundaries {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  gap: 24px 20px;
+  margin-top: 2rem;
+  color: #334155;
+}
+.slidev-layout .code-boundaries-source {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  padding: 1.2rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-family: var(--slidev-code-font-family);
+  font-size: 11px;
+  line-height: 2;
+}
+.slidev-layout .code-boundaries-source code {
+  padding: 0;
+  background: transparent;
+  font-size: inherit;
+}
+.code-boundaries-graph { color: #6d28d9; background: #ede9fe; }
+.code-boundaries-task { color: #9a3412; background: #ffedd5; }
+.code-boundaries-label {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+.code-boundaries-graph-label { color: #6d28d9; }
+.code-boundaries-task-label { color: #9a3412; }
+.code-boundaries-pointer { font: 40px/1 sans-serif; }
+.code-boundaries-label strong { font-size: 20px; }
+.slidev-layout .code-boundaries-label p {
+  margin: 0.65rem 0;
+  font-size: 15px;
+}
+.code-boundaries-label b { font-size: 13px; font-weight: 600; }
+.code-boundaries-note {
+  margin-top: 1.5rem;
+  font-size: 11px;
+  line-height: 1.9;
+  color: #64748b;
+}
+
 /* Provenance diagram, with its caption in the flow beneath it. */
 .slidev-layout img.provenance {
   display: block;
