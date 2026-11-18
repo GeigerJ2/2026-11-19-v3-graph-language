@@ -22,9 +22,9 @@ colorSchema: light
 
 # Why: orchestration should read like the science
 
-- Workflows today spell orchestration as process machinery: outline steps, explicit submits, resume state in a `self.ctx` dictionary.
-- That machinery can fail where no test looks: if one execution path never sets a `ctx` value, the workflow crashes at runtime with `AttributeError` — exactly on the path nobody ran.
-- The graph language keeps the science and drops the machinery. What follows is ordinary Python, checked before anything runs.
+- Workflows spell orchestration as machinery: outline steps, submits, a `self.ctx` dict.
+- Machinery fails where tests don't look: an unset `ctx` value crashes at runtime.
+- Graphs keep the science and drop the machinery: plain Python, checked before it runs.
 
 ---
 
