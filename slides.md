@@ -91,7 +91,7 @@ def multiply_add(x: int, y: int, z: int, code: Code) -> int | float:
     return total.sum
 ```
 
----
+<!--
 
 # Graphs compared with WorkChains
 
@@ -106,6 +106,8 @@ def multiply_add(x: int, y: int, z: int, code: Code) -> int | float:
 - **Provenance:**
   - Work in a task records its inputs and outputs as nodes and links in the provenance graph.
   - Inline operations run inside the graph process and are not recorded there.
+
+-->
 
 ---
 layout: two-cols-header
