@@ -1,8 +1,10 @@
 ---
+
 theme: seriph
 title: Graph language for aiida-core v3
 transition: fade
 colorSchema: light
+
 ---
 
 <div class="flex items-center gap-10" style="height: 100%">
@@ -20,15 +22,24 @@ colorSchema: light
 
 ---
 layout: two-cols
+
 ---
 
-# Why: orchestration should read like the science
-
-Same multiply-add, as a `WorkChain` and as a graph.
+# Same multiply-add, as WorkChain and as graph
 
 ::left::
 
 ```python
+from aiida.calculations.arithmetic.add import ArithmeticAddCalculation
+from aiida.engine import ToContext, WorkChain, calcfunction
+from aiida.orm import Code, Int
+
+
+@calcfunction
+def multiply(x, y):
+    return x * y
+
+
 class MultiplyAddWorkChain(WorkChain):
     @classmethod
     def define(cls, spec):
@@ -36,44 +47,89 @@ class MultiplyAddWorkChain(WorkChain):
         spec.input('x', valid_type=Int)
         spec.input('y', valid_type=Int)
         spec.input('z', valid_type=Int)
+        spec.input('code', valid_type=Code)
+        spec.outline(
+            cls.multiply, cls.add,
+            cls.validate_result, cls.result)
         spec.output('result', valid_type=Int)
-        spec.outline(cls.compute)
+        spec.exit_code(400, 'ERROR_NEGATIVE_NUMBER',
+            message='The result is a negative number.')
 
-    def compute(self):
-        product = multiply(
+    def multiply(self):
+        self.ctx.product = multiply(
             self.inputs.x, self.inputs.y)
-        self.out('result', add(
-            product, self.inputs.z))
+
+    def add(self):
+        future = self.submit(ArithmeticAddCalculation,
+            x=self.ctx.product, y=self.inputs.z,
+            code=self.inputs.code)
+        return ToContext(addition=future)
+
+    def validate_result(self):
+        result = self.ctx.addition.outputs.sum
+        if result.value < 0:
+            return self.exit_codes.ERROR_NEGATIVE_NUMBER
+
+    def result(self):
+        self.out('result',
+            self.ctx.addition.outputs.sum)
 ```
 
 ::right::
 
 ```python
+from aiida.calculations.arithmetic.add import ArithmeticAddCalculation
+from aiida.engine import graph, task
+from aiida.orm import Code
+
+add_calc = task(ArithmeticAddCalculation)
+
+
+@task
+def multiply(x: int, y: int) -> int:
+    return x * y
+
+
 @graph
 def multiply_add(x: int, y: int,
-                 z: int) -> int:
+        z: int, code: Code) -> int:
     product = multiply(x=x, y=y)
-    return add(x=product, y=z)
+    total = add_calc(x=product, y=z,
+        code=code)
+    return total.sum
 ```
 
-The graph drops the spec, the outline, and the `ctx` bookkeeping — and `build()` checks it before anything runs.
+layout: default
+class: aiida-slide
 
+---
 
-# Caught before submission
+# Less code, checked earlier
 
-A missing binding fails when the graph is built — no profile, no daemon, no run.
+- **Less to write:** a function signature instead of `spec`, outline steps, and `ctx` bookkeeping.
+- **Checked before launch:** `build()` validates wiring, types, and contracts; nothing runs, nothing is created.
+- **Runs anywhere:** plain Python, defined in a script or notebook, submitted directly — no entry points, no plugin packaging.
+- **Clean provenance:** inline state never becomes a node; the run is a single process with ordinary task children.
+
+---
+layout: default
+class: aiida-slide
+
+---
+
+# Three gates: build, submit, run
+
+**Build time.** `build()` checks syntax, wiring, and static contracts. A missing binding fails here, with the source line:
 
 ```python
 @graph
 def broken(value: int, flag: bool) -> int:
     if flag:
-        total = add(x=value, y=1)
+        total = add(x=x, y=1)
     return total
 
 broken.build()
 ```
-
-The build error names the line:
 
 ```text
 GraphLanguageError: bad.py:9:5: __main__:bad:
@@ -84,64 +140,9 @@ GraphLanguageError: bad.py:9:5: __main__:bad:
     ^
 ```
 
-<div class="verdict" >
+**Submit time.** Launch fills inputs and defaults, binds `runtime_config` per placement, and rejects unknown placements or missing execution inputs — naming the placement.
 
-Invalid wiring fails during build(). Valid wiring still needs runtime tests.
-
-</div>
-
----
-
-# Same workflow, less machinery
-
-Stepping toward a target: a `WorkChain` outline on the left, a graph on the right. Both compute the same thing.
-
-::left::
-
-**WorkChain: steps, submits, ctx**
-
-```python
-spec.outline(
-    cls.init,
-    while_(cls.has_steps_left)(
-        cls.step, cls.update),
-    cls.report)
-
-def step(self):
-    self.to_context(
-        stepped=self.submit(
-            StepToward,
-            value=self.ctx.value,
-            target=self.inputs.target))
-```
-
-::right::
-
-**Graph: plain control flow**
-
-```python
-@graph
-def converge(initial: int, target: int,
-             max_steps: int) -> dict:
-    value, attempts = initial, 0
-    while value != target \
-            and attempts < max_steps:
-        value = step_toward(
-            value=value, target=target)
-        attempts = attempts + 1
-    return report(value=value,
-                  attempts=attempts)
-```
-
-::
-
-```mermaid
-flowchart LR
-    A([initial]) --> B{target?}
-    B -->|no| C[step toward it]
-    C --> B
-    B -->|yes| D[report]
-```
+**Run time.** Branch conditions are re-checked, tasks with missing outputs fail, and declared failures map to error arms. Checkpoints keep finished task nodes, scope progress, and inline values, so a restarted graph reuses work instead of resubmitting it.
 
 ---
 
