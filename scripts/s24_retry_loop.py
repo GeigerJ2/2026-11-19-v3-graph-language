@@ -12,7 +12,6 @@ Status: runnable. See README.md for execution context.
 """
 
 from s21_division_task import DivisionErrors, divide
-from s23_require_value import require_value
 
 from aiida.engine import graph
 
@@ -26,7 +25,7 @@ def retry_ratio(numerator: float, denominator: float, max_retries: int = 3) -> f
         denominator = denominator + 1.0
         attempt = attempt + 1
         value, error = divide.alias('retry')(numerator=numerator, denominator=denominator)
-    return require_value(value=value)
+    return value
 
 
 # endregion example

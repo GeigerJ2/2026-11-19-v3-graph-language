@@ -24,36 +24,36 @@ Exit Code: 0" fillcolor="#de707fff" penwidth=0 shape=rectangle style=filled]
 	N21 [label="FolderData (21)" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
 	N22 [label="Int (22)
 value: 10" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
-	N15 -> N17 [label="CALL_CALC
-multiply" color="#000000" style=dotted]
-	N12 -> N17 [label="INPUT_CALC
-x" color="#000000" style=solid]
-	N19 -> N21 [label="CREATE
-retrieved" color="#000000" style=solid]
-	N1 -> N15 [label="INPUT_WORK
-code" color="#000000" style=dashed]
+	N15 -> N22 [label="RETURN
+result" color="#000000" style=dashed]
 	N19 -> N20 [label="CREATE
 remote_folder" color="#000000" style=solid]
-	N18 -> N19 [label="INPUT_CALC
-x" color="#000000" style=solid]
 	N13 -> N15 [label="INPUT_WORK
 y" color="#000000" style=dashed]
-	N12 -> N15 [label="INPUT_WORK
-x" color="#000000" style=dashed]
-	N13 -> N17 [label="INPUT_CALC
-y" color="#000000" style=solid]
+	N17 -> N18 [label="CREATE
+result" color="#000000" style=solid]
 	N14 -> N15 [label="INPUT_WORK
 z" color="#000000" style=dashed]
 	N15 -> N19 [label="CALL_CALC
 add_calc" color="#000000" style=dotted]
-	N14 -> N19 [label="INPUT_CALC
+	N13 -> N17 [label="INPUT_CALC
 y" color="#000000" style=solid]
-	N15 -> N22 [label="RETURN
-result" color="#000000" style=dashed]
+	N15 -> N17 [label="CALL_CALC
+multiply" color="#000000" style=dotted]
+	N18 -> N19 [label="INPUT_CALC
+x" color="#000000" style=solid]
 	N1 -> N19 [label="INPUT_CALC
 code" color="#000000" style=solid]
+	N14 -> N19 [label="INPUT_CALC
+y" color="#000000" style=solid]
+	N1 -> N15 [label="INPUT_WORK
+code" color="#000000" style=dashed]
+	N12 -> N15 [label="INPUT_WORK
+x" color="#000000" style=dashed]
+	N19 -> N21 [label="CREATE
+retrieved" color="#000000" style=solid]
 	N19 -> N22 [label="CREATE
 sum" color="#000000" style=solid]
-	N17 -> N18 [label="CREATE
-result" color="#000000" style=solid]
+	N12 -> N17 [label="INPUT_CALC
+x" color="#000000" style=solid]
 }

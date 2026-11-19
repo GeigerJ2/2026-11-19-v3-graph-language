@@ -11,9 +11,9 @@
 Status: runnable. See README.md for execution context.
 """
 
-from s21_division_task import divide, recover_zero
+from s21_division_task import divide
 
-from aiida.engine import graph
+from aiida.engine import graph, task
 
 
 # region example
@@ -23,11 +23,24 @@ def ratio_or_zero(numerator: float, denominator: float) -> float:
     if error is None:
         selected = value
     else:
-        selected = recover_zero(error=error)
+        selected = 0.0
     return selected
 
 
 # endregion example
+
+
+@task
+def record_ratio(value: float) -> float:
+    """Materialize the helper's inline fallback when running it as a root workflow."""
+    return value
+
+
+@graph
+def stored_ratio_or_zero(numerator: float, denominator: float) -> float:
+    """Execute the slide's helper with an explicit stored output boundary."""
+    selected = ratio_or_zero(numerator=numerator, denominator=denominator)
+    return record_ratio(value=selected)
 
 
 if __name__ == '__main__':

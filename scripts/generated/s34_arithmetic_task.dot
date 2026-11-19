@@ -1,22 +1,22 @@
 digraph {
 	graph [rankdir=LR]
-	N261 [label="arithmetic_task (261)
+	N259 [label="arithmetic_task (259)
 State: finished
 Exit Code: 0" color=red fillcolor="#de707f77" penwidth=6 shape=rectangle style=filled]
-	N258 [label="Int (258)
+	N256 [label="Int (256)
 value: 2" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
-	N259 [label="Int (259)
+	N257 [label="Int (257)
 value: 3" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
-	N260 [label="Int (260)
+	N258 [label="Int (258)
 value: 4" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
-	N262 [label="Int (262)
+	N260 [label="Int (260)
 value: 20" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
-	N260 -> N261 [label="INPUT_CALC
-z" color="#000000" style=solid]
-	N258 -> N261 [label="INPUT_CALC
-x" color="#000000" style=solid]
-	N261 -> N262 [label="CREATE
+	N259 -> N260 [label="CREATE
 result" color="#000000" style=solid]
-	N259 -> N261 [label="INPUT_CALC
+	N257 -> N259 [label="INPUT_CALC
 y" color="#000000" style=solid]
+	N256 -> N259 [label="INPUT_CALC
+x" color="#000000" style=solid]
+	N258 -> N259 [label="INPUT_CALC
+z" color="#000000" style=solid]
 }

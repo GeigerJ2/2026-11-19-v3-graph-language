@@ -7,72 +7,72 @@
 <svg width="586pt" height="281pt"
  viewBox="0.00 0.00 586.00 281.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
 <g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(18 262.74)">
-<!-- N261&#45;&gt;N262 -->
-<g id="edge3" class="edge">
-<title>N261&#45;&gt;N262</title>
+<!-- N259&#45;&gt;N260 -->
+<g id="edge1" class="edge">
+<title>N259&#45;&gt;N260</title>
 <path fill="none" stroke="#94a3b8" stroke-width="1.1" d="M350.99,-122.37C378.26,-122.37 409.38,-122.37 435.78,-122.37"/>
 <polygon fill="#94a3b8" stroke="#94a3b8" stroke-width="1.1" points="435.64,-124.65 442.14,-122.37 435.64,-120.1 435.64,-124.65"/>
 <text xml:space="preserve" text-anchor="middle" x="397.09" y="-134.82" font-family="Arial" font-size="9.00" fill="#64748b">CREATE</text>
 <text xml:space="preserve" text-anchor="middle" x="397.09" y="-124.32" font-family="Arial" font-size="9.00" fill="#64748b">result</text>
 </g>
-<!-- N258&#45;&gt;N261 -->
-<g id="edge2" class="edge">
-<title>N258&#45;&gt;N261</title>
+<!-- N256&#45;&gt;N259 -->
+<g id="edge3" class="edge">
+<title>N256&#45;&gt;N259</title>
 <path fill="none" stroke="#94a3b8" stroke-width="1.1" d="M92.11,-195.97C123.64,-183.66 167.67,-166.47 205.24,-151.8"/>
 <polygon fill="#94a3b8" stroke="#94a3b8" stroke-width="1.1" points="205.89,-153.99 211.12,-149.51 204.23,-149.75 205.89,-153.99"/>
 <text xml:space="preserve" text-anchor="middle" x="155.67" y="-193.14" font-family="Arial" font-size="9.00" fill="#64748b">INPUT_CALC</text>
 <text xml:space="preserve" text-anchor="middle" x="155.67" y="-182.64" font-family="Arial" font-size="9.00" fill="#64748b">x</text>
 </g>
-<!-- N259&#45;&gt;N261 -->
-<g id="edge4" class="edge">
-<title>N259&#45;&gt;N261</title>
+<!-- N257&#45;&gt;N259 -->
+<g id="edge2" class="edge">
+<title>N257&#45;&gt;N259</title>
 <path fill="none" stroke="#94a3b8" stroke-width="1.1" d="M98.7,-122.37C129.4,-122.37 169.72,-122.37 204.6,-122.37"/>
 <polygon fill="#94a3b8" stroke="#94a3b8" stroke-width="1.1" points="204.25,-124.65 210.75,-122.37 204.25,-120.1 204.25,-124.65"/>
 <text xml:space="preserve" text-anchor="middle" x="155.67" y="-134.82" font-family="Arial" font-size="9.00" fill="#64748b">INPUT_CALC</text>
 <text xml:space="preserve" text-anchor="middle" x="155.67" y="-124.32" font-family="Arial" font-size="9.00" fill="#64748b">y</text>
 </g>
-<!-- N260&#45;&gt;N261 -->
-<g id="edge1" class="edge">
-<title>N260&#45;&gt;N261</title>
+<!-- N258&#45;&gt;N259 -->
+<g id="edge4" class="edge">
+<title>N258&#45;&gt;N259</title>
 <path fill="none" stroke="#94a3b8" stroke-width="1.1" d="M92.11,-48.77C123.64,-61.09 167.67,-78.27 205.24,-92.94"/>
 <polygon fill="#94a3b8" stroke="#94a3b8" stroke-width="1.1" points="204.23,-94.99 211.12,-95.23 205.89,-90.75 204.23,-94.99"/>
 <text xml:space="preserve" text-anchor="middle" x="155.67" y="-95.21" font-family="Arial" font-size="9.00" fill="#64748b">INPUT_CALC</text>
 <text xml:space="preserve" text-anchor="middle" x="155.67" y="-84.71" font-family="Arial" font-size="9.00" fill="#64748b">z</text>
 </g>
-<!-- N261 -->
+<!-- N259 -->
 <g id="node1" class="node">
-<title>N261</title>
+<title>N259</title>
 <path fill="#e8f0f4" stroke="#5c8493" stroke-width="1.8" d="M338.09,-152.39C338.09,-152.39 225.17,-152.39 225.17,-152.39 219.17,-152.39 213.17,-146.39 213.17,-140.39 213.17,-140.39 213.17,-104.36 213.17,-104.36 213.17,-98.36 219.17,-92.36 225.17,-92.36 225.17,-92.36 338.09,-92.36 338.09,-92.36 344.09,-92.36 350.09,-98.36 350.09,-104.36 350.09,-104.36 350.09,-140.39 350.09,-140.39 350.09,-146.39 344.09,-152.39 338.09,-152.39"/>
-<text xml:space="preserve" text-anchor="middle" x="281.63" y="-132.35" font-family="Arial" font-size="12.00" fill="#334155">arithmetic_task (261)</text>
+<text xml:space="preserve" text-anchor="middle" x="281.63" y="-132.35" font-family="Arial" font-size="12.00" fill="#334155">arithmetic_task (259)</text>
 <text xml:space="preserve" text-anchor="middle" x="281.63" y="-118.1" font-family="Arial" font-size="12.00" fill="#334155">State: finished</text>
 <text xml:space="preserve" text-anchor="middle" x="281.63" y="-103.85" font-family="Arial" font-size="12.00" fill="#334155">Exit Code: 0</text>
 </g>
-<!-- N258 -->
+<!-- N256 -->
 <g id="node2" class="node">
-<title>N258</title>
+<title>N256</title>
 <ellipse fill="#ecfdf5" stroke="#cbd5e1" stroke-width="1.1" cx="49.09" cy="-212.37" rx="49.09" ry="32.37"/>
-<text xml:space="preserve" text-anchor="middle" x="49.09" y="-215.22" font-family="Arial" font-size="12.00" fill="#334155">Int (258)</text>
+<text xml:space="preserve" text-anchor="middle" x="49.09" y="-215.22" font-family="Arial" font-size="12.00" fill="#334155">Int (256)</text>
 <text xml:space="preserve" text-anchor="middle" x="49.09" y="-200.97" font-family="Arial" font-size="12.00" fill="#334155">value: 2</text>
 </g>
-<!-- N259 -->
+<!-- N257 -->
 <g id="node3" class="node">
-<title>N259</title>
+<title>N257</title>
 <ellipse fill="#ecfdf5" stroke="#cbd5e1" stroke-width="1.1" cx="49.09" cy="-122.37" rx="49.09" ry="32.37"/>
-<text xml:space="preserve" text-anchor="middle" x="49.09" y="-125.22" font-family="Arial" font-size="12.00" fill="#334155">Int (259)</text>
+<text xml:space="preserve" text-anchor="middle" x="49.09" y="-125.22" font-family="Arial" font-size="12.00" fill="#334155">Int (257)</text>
 <text xml:space="preserve" text-anchor="middle" x="49.09" y="-110.97" font-family="Arial" font-size="12.00" fill="#334155">value: 3</text>
 </g>
-<!-- N260 -->
+<!-- N258 -->
 <g id="node4" class="node">
-<title>N260</title>
+<title>N258</title>
 <ellipse fill="#ecfdf5" stroke="#cbd5e1" stroke-width="1.1" cx="49.09" cy="-32.37" rx="49.09" ry="32.37"/>
-<text xml:space="preserve" text-anchor="middle" x="49.09" y="-35.22" font-family="Arial" font-size="12.00" fill="#334155">Int (260)</text>
+<text xml:space="preserve" text-anchor="middle" x="49.09" y="-35.22" font-family="Arial" font-size="12.00" fill="#334155">Int (258)</text>
 <text xml:space="preserve" text-anchor="middle" x="49.09" y="-20.97" font-family="Arial" font-size="12.00" fill="#334155">value: 4</text>
 </g>
-<!-- N262 -->
+<!-- N260 -->
 <g id="node5" class="node">
-<title>N262</title>
+<title>N260</title>
 <ellipse fill="#ecfdf5" stroke="#cbd5e1" stroke-width="1.1" cx="496.89" cy="-122.37" rx="52.8" ry="32.37"/>
-<text xml:space="preserve" text-anchor="middle" x="496.89" y="-125.22" font-family="Arial" font-size="12.00" fill="#334155">Int (262)</text>
+<text xml:space="preserve" text-anchor="middle" x="496.89" y="-125.22" font-family="Arial" font-size="12.00" fill="#334155">Int (260)</text>
 <text xml:space="preserve" text-anchor="middle" x="496.89" y="-110.97" font-family="Arial" font-size="12.00" fill="#334155">value: 20</text>
 </g>
 </g>

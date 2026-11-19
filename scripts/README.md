@@ -2,7 +2,14 @@
 
 The Python in [`../slides.md`](../slides.md) is imported directly from these files
 using Slidev's `<<< ...#region` syntax. Edit the source here, not a second copy in
-the Markdown. The concept table uses `ConceptCode.vue` to preserve its custom
+the Markdown. The three merged slides use generated excerpts so they retain native
+Python syntax highlighting. Refresh them after editing their source scripts:
+
+```bash
+uv run python pres/2026-11-19-v3-graph-language/scripts/sync_slide_code.py
+```
+
+`verify_snippets.py` checks that these excerpts match the canonical source regions. The concept table uses `ConceptCode.vue` to preserve its custom
 colors while reading the nine `concept_*.py` fragments from disk. The two error
 excerpts are external `.txt` snippets as well.
 
@@ -96,7 +103,7 @@ the renderer's original default remains `public/assets/`.
 
 ## Source inventory and execution policy
 
-[`snippets.json`](snippets.json) maps all **35 Python snippets and nine concept
+[`snippets.json`](snippets.json) maps all **34 Python snippets and nine concept
 fragments** to their slide titles and execution policies. The source-file numbers
 are snippet IDs, not slide numbers, so adding prose slides does not rename files.
 
@@ -114,7 +121,7 @@ are snippet IDs, not slide numbers, so adding prose slides does not rename files
 | 17–18 | PortModel | Nested defaults produce `11.57625`. |
 | 19–20 | Existing processes/runtime config | WorkChain and CalcJob integration returns `14`. |
 | 21–22 | Declared failures | Normal division returns `4.0`; zero denominator selects a `0.0` fallback. |
-| 23–24 | Retry loop | Zero denominator retries to `12.0`; normal division gives `4.0`; zero retry budget fails with exit status `400`. All three roots are rendered. |
+| 24 | Retry loop | Reuses the displayed `divide` task and returns `value` directly. Zero denominator retries to `12.0`; normal division gives `4.0`; zero retry budget finishes without a result output because no explicit failure guard remains. All three roots are rendered. |
 | 25–26 | WorkGraph comparison | Contextual WorkGraph builder fragments, not runnable AiiDA graph-language workflows; no AiiDA provenance is claimed. |
 | 27 | Graph branch binding | Both branches return `1`/`7`. |
 | 28 | Explicit checkpoint proposal | `checkpoint()` is unimplemented; kept as proposal source, not executed. |
@@ -127,6 +134,11 @@ The `concept_*.py` files are explicitly contextual fragments, including a graph
 signature and WorkChain method excerpts. They are syntax-checked and displayed
 from source; the corresponding complete workflows in snippets 01–02 supply the
 real executable comparison.
+
+The declared-failure slide hardcodes its fallback as `0.0`. Its `ratio_or_zero`
+graph is executed as a helper inside `stored_ratio_or_zero`; a final `record_ratio`
+task materializes the selected scalar for the root workflow's stored output.
+This execution boundary is outside the displayed snippet, not a recovery task.
 
 Expected failure paths deliberately emit AiiDA exception reports. The runner
 checks these failures and still succeeds. The prototype `partial` and checkpoint

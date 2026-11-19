@@ -147,7 +147,7 @@ def execute(examples: Examples, selected: set[int], manifest: list[dict]) -> lis
     modules = {item['id']: item['file'].removesuffix('.py') for item in manifest}
     notes = []
     # Definition-only snippets are exercised through the graphs that use them.
-    owners = {13: 14, 15: 16, 17: 18, 19: 20, 21: 22, 23: 24}
+    owners = {13: 14, 15: 16, 17: 18, 19: 20, 21: 22}
     selected = selected | {owner for definition, owner in owners.items() if definition in selected}
     for identifier in sorted(selected):
         module = importlib.import_module(modules[identifier])
@@ -284,7 +284,7 @@ def execute(examples: Examples, selected: set[int], manifest: list[dict]) -> lis
                 examples.run(
                     identifier,
                     f'denominator_{int(denominator)}',
-                    module.ratio_or_zero,
+                    module.stored_ratio_or_zero,
                     0.0 if denominator == 0 else 4.0,
                     inputs={'numerator': 12.0, 'denominator': denominator},
                 )
@@ -298,10 +298,9 @@ def execute(examples: Examples, selected: set[int], manifest: list[dict]) -> lis
                     inputs={'numerator': 12.0, 'denominator': denominator, 'max_retries': 3},
                 )
             outputs, node = run_get_node(module.retry_ratio, numerator=12.0, denominator=0.0, max_retries=0)
-            assert node.is_failed
-            assert node.exit_status == 400
+            assert node.is_finished_ok
             assert not outputs
-            examples.save(identifier, 'exhausted_budget', node)
+            examples.save(identifier, 'exhausted_budget_no_output', node)
         elif identifier == 27:
             for value, expected in ((-2, 1), (2, 7)):
                 examples.run(

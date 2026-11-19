@@ -1,6 +1,6 @@
 digraph {
 	graph [rankdir=LR]
-	N149 [label="s22_declared_failure:ratio_or_zero (149)
+	N149 [label="s22_declared_failure:stored_ratio_or_zero (149)
 State: finished
 Exit Code: 0" color=red fillcolor="#8cd499ff" penwidth=6 shape=ellipse style=filled]
 	N147 [label="Float (147)
@@ -11,29 +11,31 @@ value: 0.0" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
 State: finished
 Exit Code: 410" fillcolor="#de707f77" penwidth=0 shape=rectangle style=filled]
 	N152 [label="EnumData (152)" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
-	N153 [label="recover_zero (153)
+	N153 [label="Float (153)
+value: 0.0" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N154 [label="record_ratio (154)
 State: finished
 Exit Code: 0" fillcolor="#de707f77" penwidth=0 shape=rectangle style=filled]
-	N154 [label="Float (154)
+	N155 [label="Float (155)
 value: 0.0" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
-	N153 -> N154 [label="CREATE
+	N154 -> N155 [label="CREATE
 result" color="#000000" style=solid]
 	N147 -> N151 [label="INPUT_CALC
 numerator" color="#000000" style=solid]
-	N148 -> N151 [label="INPUT_CALC
-denominator" color="#000000" style=solid]
+	N149 -> N154 [label="CALL_CALC
+record_ratio" color="#000000" style=dotted]
 	N151 -> N152 [label="CREATE
 error" color="#000000" style=solid]
-	N152 -> N153 [label="INPUT_CALC
-error" color="#000000" style=solid]
-	N149 -> N154 [label="RETURN
-result" color="#000000" style=dashed]
 	N148 -> N149 [label="INPUT_WORK
 denominator" color="#000000" style=dashed]
+	N148 -> N151 [label="INPUT_CALC
+denominator" color="#000000" style=solid]
+	N149 -> N155 [label="RETURN
+result" color="#000000" style=dashed]
+	N149 -> N151 [label="CALL_CALC
+ratio_or_zero__divide" color="#000000" style=dotted]
 	N147 -> N149 [label="INPUT_WORK
 numerator" color="#000000" style=dashed]
-	N149 -> N151 [label="CALL_CALC
-divide" color="#000000" style=dotted]
-	N149 -> N153 [label="CALL_CALC
-branch_2__recover_zero" color="#000000" style=dotted]
+	N153 -> N154 [label="INPUT_CALC
+value" color="#000000" style=solid]
 }

@@ -1,29 +1,40 @@
 digraph {
 	graph [rankdir=LR]
-	N157 [label="s22_declared_failure:ratio_or_zero (157)
+	N158 [label="s22_declared_failure:stored_ratio_or_zero (158)
 State: finished
 Exit Code: 0" color=red fillcolor="#8cd499ff" penwidth=6 shape=ellipse style=filled]
-	N155 [label="Float (155)
-value: 12.0" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
 	N156 [label="Float (156)
+value: 12.0" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N157 [label="Float (157)
 value: 3.0" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
-	N159 [label="divide (159)
+	N160 [label="divide (160)
 State: finished
 Exit Code: 0" fillcolor="#de707f77" penwidth=0 shape=rectangle style=filled]
-	N160 [label="Float (160)
+	N161 [label="Float (161)
 value: 4.0" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
-	N157 -> N159 [label="CALL_CALC
-divide" color="#000000" style=dotted]
-	N156 -> N159 [label="INPUT_CALC
-denominator" color="#000000" style=solid]
-	N155 -> N159 [label="INPUT_CALC
-numerator" color="#000000" style=solid]
-	N155 -> N157 [label="INPUT_WORK
-numerator" color="#000000" style=dashed]
-	N156 -> N157 [label="INPUT_WORK
-denominator" color="#000000" style=dashed]
-	N157 -> N160 [label="RETURN
-result" color="#000000" style=dashed]
-	N159 -> N160 [label="CREATE
+	N162 [label="record_ratio (162)
+State: finished
+Exit Code: 0" fillcolor="#de707f77" penwidth=0 shape=rectangle style=filled]
+	N163 [label="Float (163)
+value: 4.0" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N158 -> N162 [label="CALL_CALC
+record_ratio" color="#000000" style=dotted]
+	N161 -> N162 [label="INPUT_CALC
 value" color="#000000" style=solid]
+	N158 -> N163 [label="RETURN
+result" color="#000000" style=dashed]
+	N160 -> N161 [label="CREATE
+value" color="#000000" style=solid]
+	N158 -> N160 [label="CALL_CALC
+ratio_or_zero__divide" color="#000000" style=dotted]
+	N157 -> N158 [label="INPUT_WORK
+denominator" color="#000000" style=dashed]
+	N156 -> N158 [label="INPUT_WORK
+numerator" color="#000000" style=dashed]
+	N157 -> N160 [label="INPUT_CALC
+denominator" color="#000000" style=solid]
+	N156 -> N160 [label="INPUT_CALC
+numerator" color="#000000" style=solid]
+	N162 -> N163 [label="CREATE
+result" color="#000000" style=solid]
 }

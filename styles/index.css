@@ -155,6 +155,11 @@
   --slidev-code-line-height: 13px;
 }
 
+.larger-workflow-code {
+  --slidev-code-font-size: 11px;
+  --slidev-code-line-height: 14px;
+}
+
 /* MultiplyAdd comparison: the full WorkChain (about 45 lines) fits the slide height. */
 .side-by-side {
   padding-top: 1.75rem;
@@ -296,6 +301,38 @@
   text-align: center;
   opacity: 0.55;
 }
+/* ConceptCode renders spans with v-html, outside the slide's scoped styles. */
+.map-reduce-code .collection-token {
+  color: #92400e;
+  background: #fde68a;
+  border-radius: 3px;
+  padding: 0 2px;
+  font-weight: 600;
+}
+
+.placement-code-layout {
+  --slidev-code-font-size: 12px;
+  --slidev-code-line-height: 16px;
+}
+
+.declared-failures-code { width: 100%; max-width: 760px; }
+.declared-failures-code .concept-code,
+.declared-failures-code .python-syntax-code pre {
+  font-size: var(--slidev-code-font-size);
+  line-height: var(--slidev-code-line-height);
+  padding: 10px 14px;
+}
+
+.declared-failures-code .python-syntax-code code {
+  font-family: var(--slidev-code-font-family);
+  font-size: inherit;
+  line-height: inherit;
+}
+
+/* Keep the complete input/output example within one slide at a readable size. */
+.port-model-layout .slidev-code-wrapper { margin: 0 0 6px !important; }
+.port-model-layout pre { margin: 0 !important; padding: 5px 8px !important; }
+
 /* Small left-to-right data-flow sketch: boxes, arrows, and one stacked fan-out. */
 .slidev-layout .flow {
   display: flex;

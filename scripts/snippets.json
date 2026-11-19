@@ -133,12 +133,6 @@
       "status": "runnable"
     },
     {
-      "id": 23,
-      "file": "s23_require_value.py",
-      "title": "Iterating on a declared failure",
-      "status": "shared-definitions"
-    },
-    {
       "id": 24,
       "file": "s24_retry_loop.py",
       "title": "Iterating on a declared failure",

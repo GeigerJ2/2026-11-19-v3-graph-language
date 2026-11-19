@@ -9,6 +9,32 @@
 """Slide snippet 13: Map and reduce.
 
 Status: shared-definitions. See README.md for execution context.
+The slide displays this abbreviated excerpt; executable implementations follow below.
+
+# region overview
+from aiida.engine import graph, par_map, task
+from aiida.orm import DataList, StructureData
+
+
+# region map_excerpt
+@task
+def expand_cell(structure: StructureData) -> StructureData:
+    scaled = structure.clone()
+    ...  # Expand the cell vectors.
+    return scaled
+# endregion map_excerpt
+
+
+# region reduce_excerpt
+@task
+def mean_cell_volume(structures: DataList[StructureData]) -> float:
+    ...  # Validate the collection.
+    total = 0.0
+    for structure in structures:
+        total += structure.get_cell_volume()
+    return total / len(structures)
+# endregion reduce_excerpt
+# endregion overview
 """
 
 # region example

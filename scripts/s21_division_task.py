@@ -26,11 +26,6 @@ def divide(numerator: float, denominator: float) -> Result[float, DivisionErrors
     return Ok(numerator / denominator)
 
 
-@task
-def recover_zero(error: DivisionErrors) -> float:
-    return 0.0
-
-
 # endregion example
 
 

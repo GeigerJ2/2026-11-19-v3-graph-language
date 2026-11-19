@@ -1,29 +1,29 @@
 digraph {
 	graph [rankdir=LR]
-	N232 [label="s31_branch_graph:choose_graph (232)
+	N230 [label="s31_branch_graph:choose_graph (230)
 State: finished
 Exit Code: 0" color=red fillcolor="#8cd499ff" penwidth=6 shape=ellipse style=filled]
-	N230 [label="Int (230)
+	N228 [label="Int (228)
 value: 2" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
-	N231 [label="Int (231)
+	N229 [label="Int (229)
 value: 3" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
-	N234 [label="multiply (234)
+	N232 [label="multiply (232)
 State: finished
 Exit Code: 0" fillcolor="#de707f77" penwidth=0 shape=rectangle style=filled]
-	N235 [label="Int (235)
+	N233 [label="Int (233)
 value: 6" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
-	N232 -> N234 [label="CALL_CALC
+	N230 -> N232 [label="CALL_CALC
 branch_2__multiply" color="#000000" style=dotted]
-	N232 -> N235 [label="RETURN
-result" color="#000000" style=dashed]
-	N230 -> N234 [label="INPUT_CALC
-x" color="#000000" style=solid]
-	N230 -> N232 [label="INPUT_WORK
+	N228 -> N230 [label="INPUT_WORK
 x" color="#000000" style=dashed]
-	N231 -> N234 [label="INPUT_CALC
-y" color="#000000" style=solid]
-	N231 -> N232 [label="INPUT_WORK
-y" color="#000000" style=dashed]
-	N234 -> N235 [label="CREATE
+	N228 -> N232 [label="INPUT_CALC
+x" color="#000000" style=solid]
+	N232 -> N233 [label="CREATE
 result" color="#000000" style=solid]
+	N229 -> N232 [label="INPUT_CALC
+y" color="#000000" style=solid]
+	N230 -> N233 [label="RETURN
+result" color="#000000" style=dashed]
+	N229 -> N230 [label="INPUT_WORK
+y" color="#000000" style=dashed]
 }

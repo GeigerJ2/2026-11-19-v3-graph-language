@@ -1,33 +1,33 @@
 digraph {
 	graph [rankdir=LR]
-	N211 [label="s29_automatic_checkpoint_proposal:arithmetic_inline (211)
+	N209 [label="s29_automatic_checkpoint_proposal:arithmetic_inline (209)
 State: finished
 Exit Code: 0" color=red fillcolor="#8cd499ff" penwidth=6 shape=ellipse style=filled]
-	N208 [label="Int (208)
+	N206 [label="Int (206)
 value: 2" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
-	N209 [label="Int (209)
+	N207 [label="Int (207)
 value: 3" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
-	N210 [label="Int (210)
+	N208 [label="Int (208)
 value: 4" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
-	N213 [label="Int (213)
+	N211 [label="Int (211)
 value: 20" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
-	N214 [label="record (214)
+	N212 [label="record (212)
 State: finished
 Exit Code: 0" fillcolor="#de707f77" penwidth=0 shape=rectangle style=filled]
-	N215 [label="Int (215)
+	N213 [label="Int (213)
 value: 20" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
-	N213 -> N214 [label="INPUT_CALC
-value" color="#000000" style=solid]
-	N211 -> N215 [label="RETURN
-result" color="#000000" style=dashed]
-	N214 -> N215 [label="CREATE
-result" color="#000000" style=solid]
-	N210 -> N211 [label="INPUT_WORK
-z" color="#000000" style=dashed]
-	N211 -> N214 [label="CALL_CALC
-record" color="#000000" style=dotted]
-	N208 -> N211 [label="INPUT_WORK
-x" color="#000000" style=dashed]
-	N209 -> N211 [label="INPUT_WORK
+	N207 -> N209 [label="INPUT_WORK
 y" color="#000000" style=dashed]
+	N209 -> N212 [label="CALL_CALC
+record" color="#000000" style=dotted]
+	N208 -> N209 [label="INPUT_WORK
+z" color="#000000" style=dashed]
+	N211 -> N212 [label="INPUT_CALC
+value" color="#000000" style=solid]
+	N209 -> N213 [label="RETURN
+result" color="#000000" style=dashed]
+	N206 -> N209 [label="INPUT_WORK
+x" color="#000000" style=dashed]
+	N212 -> N213 [label="CREATE
+result" color="#000000" style=solid]
 }

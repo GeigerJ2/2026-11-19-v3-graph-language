@@ -1,0 +1,30 @@
+digraph {
+	graph [rankdir=LR]
+	N184 [label="s24_retry_loop:retry_ratio (184)
+State: finished
+Exit Code: 0" color=red fillcolor="#8cd499ff" penwidth=6 shape=ellipse style=filled]
+	N181 [label="Float (181)
+value: 12.0" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N182 [label="Float (182)
+value: 0.0" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N183 [label="Int (183)
+value: 0" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N186 [label="divide (186)
+State: finished
+Exit Code: 410" fillcolor="#de707f77" penwidth=0 shape=rectangle style=filled]
+	N187 [label="EnumData (187)" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N181 -> N184 [label="INPUT_WORK
+numerator" color="#000000" style=dashed]
+	N182 -> N186 [label="INPUT_CALC
+denominator" color="#000000" style=solid]
+	N184 -> N186 [label="CALL_CALC
+initial" color="#000000" style=dotted]
+	N181 -> N186 [label="INPUT_CALC
+numerator" color="#000000" style=solid]
+	N183 -> N184 [label="INPUT_WORK
+max_retries" color="#000000" style=dashed]
+	N186 -> N187 [label="CREATE
+error" color="#000000" style=solid]
+	N182 -> N184 [label="INPUT_WORK
+denominator" color="#000000" style=dashed]
+}

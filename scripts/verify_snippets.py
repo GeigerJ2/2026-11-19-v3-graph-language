@@ -16,6 +16,8 @@ import subprocess
 from pathlib import Path
 from xml.etree import ElementTree
 
+from sync_slide_code import EXCERPTS, sync
+
 HERE = Path(__file__).resolve().parent
 
 
@@ -26,6 +28,7 @@ def check_sources() -> None:
     assert '```text' not in slides
     assert '<pre class="concept-code"><code>' not in slides
     inventory = json.loads((HERE / 'snippets.json').read_text())
+    sync(check=True)
     referenced = set()
     for filename, region in re.findall(r'^<<< @/scripts/([^#\s]+)(?:#([\w-]+))?', slides, re.M):
         source = (HERE / filename).read_text()
@@ -38,6 +41,14 @@ def check_sources() -> None:
         assert f'# region {region}\n' in source
         assert f'# endregion {region}' in source
         referenced.add(filename)
+    for filename, region in re.findall(r'append-file="([^"]+)" append-region="([^"]+)"', slides):
+        source = (HERE / filename).read_text()
+        assert f'# region {region}\n' in source
+        assert f'# endregion {region}' in source
+        referenced.add(filename)
+    for name, sources in EXCERPTS.items():
+        assert f'generated/{name}' in referenced
+        referenced.update(sources)
     for item in inventory['snippets'] + inventory['concepts']:
         assert item['file'] in referenced, f'Unreferenced snippet: {item["file"]}'
     for source in HERE.glob('*.py'):

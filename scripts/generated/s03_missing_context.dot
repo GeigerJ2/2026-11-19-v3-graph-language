@@ -6,8 +6,8 @@ State: excepted" color=red fillcolor="#e38851ff" penwidth=6 shape=rectangle styl
 value: 4" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
 	N29 [label="Bool (29)
 False" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
-	N28 -> N30 [label="INPUT_WORK
-value" color="#000000" style=dashed]
 	N29 -> N30 [label="INPUT_WORK
 flag" color="#000000" style=dashed]
+	N28 -> N30 [label="INPUT_WORK
+value" color="#000000" style=dashed]
 }

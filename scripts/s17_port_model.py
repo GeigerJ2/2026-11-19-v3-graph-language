@@ -12,13 +12,12 @@ Status: shared-definitions. See README.md for execution context.
 """
 
 # region example
-import typing as t
-
-from aiida.engine import PortField, PortModel, task
+from aiida.engine import PortModel, task
 
 
+# region declarations
 class Scaling(PortModel):
-    factor: t.Annotated[float, PortField(help='Cell scale factor.')] = 1.05
+    factor: float = 1.05
 
 
 class Settings(PortModel):
@@ -26,11 +25,16 @@ class Settings(PortModel):
     label: str = 'demo'
 
 
+class VolumeResult(PortModel):
+    volume: float
+
+
 @task
-def scaled_volume(volume: float, settings: Settings) -> float:
-    return volume * settings.scaling.factor**3
+def scaled_volume(volume: float, settings: Settings) -> VolumeResult:
+    return VolumeResult(volume=volume * settings.scaling.factor**3)
 
 
+# endregion declarations
 # endregion example
 
 

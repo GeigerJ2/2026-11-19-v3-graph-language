@@ -341,69 +341,137 @@ layout: section
 
 ---
 layout: two-cols-header
-layoutClass: dense
+layoutClass: dense map-reduce-layout
 ---
 
 # Map and reduce
 
 ::left::
 
-<<< @/scripts/s13_map_tasks.py#example python
+<div class="map-reduce-code map-stage">
+<div class="stage-label"></div>
 
-::right::
+<<< @/scripts/s13_map_tasks.py#map_excerpt python
 
-<div class="flow">
-<span class="box">DataList</span>→<span class="stack"><span class="box">expand_cell</span><span class="box">expand_cell</span><span class="box">expand_cell</span></span>→<span class="box">DataList</span>→<span class="box">mean_cell_volume</span>
 </div>
 
-<<< @/scripts/s14_map_reduce.py#example python
+<div class="map-reduce-code reduce-stage">
+<div class="stage-label"></div>
 
-- `par_map`: one call per item, all submitted before waiting.
-- Collector stores results in input order.
-- `for` loops: task bodies only.
+<<< @/scripts/s13_map_tasks.py#reduce_excerpt python
 
----
-layout: two-cols-header
-layoutClass: dense
----
+</div>
 
-# Placement names and partial bindings
+<div class="map-reduce-code graph-stage">
+<div class="stage-label"></div>
 
-::left::
+<ConceptCode file="s14_map_reduce.py" region="example" highlight-line="expanded = par_map(expand_cell, structures)" highlights='[["structures", "collection-token"], ["expanded", "collection-token"]]' />
 
-<<< @/scripts/s15_placement_task.py#example python
-
-- Placement: one call site; repeated calls need unique aliases.
-- `partial`: shared input bindings; currently unsupported in this checkout.
+</div>
 
 ::right::
 
-<<< @/scripts/s16_placements.py#example python
+<div class="map-reduce-diagram graph-stage">
+<div class="stage-label">mean_expanded_volume</div>
+<svg viewBox="0 0 340 365" role="img" aria-label="A DataList fans out to three independent expand_cell tasks in teal. Their outputs are collected into a DataList, then reduced by mean_cell_volume in purple. The blue frame represents graph orchestration.">
+  <defs>
+    <marker id="map-reduce-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8" />
+    </marker>
+  </defs>
+  <g fill="none" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#map-reduce-arrow)">
+    <path d="M170 48 V70 H59 V104" />
+    <path d="M170 48 V104" />
+    <path d="M170 48 V70 H281 V104" />
+    <path d="M59 150 V180 H145 V204" />
+    <path d="M170 150 V204" />
+    <path d="M281 150 V180 H195 V204" />
+    <path d="M170 246 V290" />
+  </g>
+  <g font-family="Arial, sans-serif" text-anchor="middle">
+    <rect x="110" y="8" width="120" height="40" rx="8" fill="#fff7d6" stroke="#d97706" />
+    <text x="170" y="33" fill="#b45309" font-size="7">DataList</text>
+    <text x="170" y="94" fill="#0f766e" font-size="6.5" font-weight="600"></text>
+    <g fill="#e6f7f2" stroke="#0f766e">
+      <rect x="10" y="110" width="98" height="40" rx="8" />
+      <rect x="121" y="110" width="98" height="40" rx="8" />
+      <rect x="232" y="110" width="98" height="40" rx="8" />
+    </g>
+    <g fill="#0f766e" font-size="6.5" font-weight="500" font-family="ui-monospace, monospace">
+      <text x="59" y="135">expand_cell</text>
+      <text x="170" y="135">expand_cell</text>
+      <text x="281" y="135">expand_cell</text>
+    </g>
+    <rect x="110" y="204" width="120" height="42" rx="8" fill="#fff7d6" stroke="#d97706" />
+    <text x="170" y="230" fill="#b45309" font-size="7">DataList</text>
+    <text x="170" y="273" fill="#6d28d9" font-size="6.5" font-weight="600"></text>
+    <rect x="78" y="290" width="184" height="44" rx="8" fill="#f3edff" stroke="#8b5cf6" />
+    <text x="170" y="317" fill="#6d28d9" font-size="7" font-weight="500" font-family="ui-monospace, monospace">mean_cell_volume</text>
+    <text x="170" y="356" fill="#64748b" font-size="6.5"></text>
+  </g>
+</svg>
+</div>
+
+<style>
+.map-reduce-layout { grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr); }
+.map-reduce-code {
+  border: 1px solid;
+  border-left-width: 4px;
+  border-radius: 9px;
+  padding: 6px 9px;
+  margin-bottom: 9px;
+  --slidev-code-font-size: 11px;
+  --slidev-code-line-height: 14px;
+}
+.map-reduce-code .stage-label,
+.map-reduce-diagram .stage-label { font-size: 11px; font-weight: 700; margin-bottom: 4px; }
+.map-reduce-code.map-stage { background: #e6f7f2; border-color: #0f766e; }
+.map-reduce-code.map-stage .stage-label { color: #0f766e; }
+.map-reduce-code.reduce-stage { background: #f3edff; border-color: #8b5cf6; }
+.map-reduce-code.reduce-stage .stage-label { color: #6d28d9; }
+.map-reduce-code.graph-stage { background: #eff6ff; border-color: #3b82f6; }
+.map-reduce-code.graph-stage .stage-label,
+.map-reduce-diagram.graph-stage .stage-label { color: #1d4ed8; }
+.map-reduce-code pre,
+.map-reduce-code pre code { background: transparent !important; box-shadow: none !important; }
+.map-reduce-code .concept-code { margin: 0; font-size: var(--slidev-code-font-size); line-height: var(--slidev-code-line-height); }
+.map-reduce-diagram { margin: 12px 0 0 12px; padding: 14px; border: 1px solid #3b82f6; border-radius: 12px; background: #f8fbff; }
+.map-reduce-diagram .stage-label { font-family: ui-monospace, monospace; font-size: 8px; font-weight: 500; }
+.map-reduce-diagram svg { width: 100%; max-height: 365px; }
+.map-reduce-diagram svg text { font-size: 12px !important; font-weight: 400 !important; }
+.map-reduce-diagram .stage-label { font-size: 8px !important; }
+</style>
 
 ---
 layout: two-cols-header
-layoutClass: dense
+layoutClass: dense port-model-layout
 ---
 
-# Structured inputs with PortModel
+# Structured inputs/outputs with PortModel
 
 ::left::
 
-<<< @/scripts/s17_port_model.py#example python
-
-::right::
+<<< @/scripts/s17_port_model.py#declarations python
 
 <<< @/scripts/s18_configured.py#example python
 
 <<< @/scripts/s18_configured.py#launch python
 
-- Fields become input nodes: `Float(1.05)`, `Str('demo')`.
-- Empty `scaling` uses defaults; result: `11.57625`.
-- Pydantic `BaseModel` also declares nested ports, defaults, and help text; validators and aliases are not supported.
+::right::
+
+
+
+<style>
+.port-model-layout {
+  grid-template-columns: minmax(0, 1.9fr) minmax(0, 1fr);
+  --slidev-code-font-size: 11px;
+  --slidev-code-line-height: 13px;
+}
+</style>
 
 ---
 layout: two-cols-header
-layoutClass: dense
+layoutClass: dense larger-workflow-code
 ---
 
 # CalcJob and WorkChain tasks
@@ -418,65 +486,46 @@ layoutClass: dense
 
 ::bottom::
 
-- `task(...)`: existing CalcJobs and WorkChains, unchanged.
-- Graph returns the CalcJob's existing `sum` node.
-- `runtime_config`: `code`, `metadata`.
 
 ---
-layout: two-cols-header
-layoutClass: dense
+layout: default
+layoutClass: dense larger-workflow-code declared-failures-layout
 ---
 
 # Declared failures
 
-::left::
+<div class="declared-failures-code">
 
-<<< @/scripts/s21_division_task.py#example python
+<<< @/scripts/generated/declared_failures.py#example python
 
-::right::
+</div>
 
-<<< @/scripts/s22_declared_failure.py#example python
-
-- `(value, error)`: exactly one is present.
-- Declared error: nonzero task status, available to the graph.
-- Other failures: graph exits with `ERROR_TASK_FAILED`.
 
 ---
-layout: two-cols-header
-layoutClass: dense
+layout: default
+layoutClass: dense larger-workflow-code declared-failures-layout
 ---
 
 # Iterating on a declared failure
 
-::left::
+<div class="declared-failures-code">
 
-**Reuse `divide` from the previous slide.** Instead of a fallback, change the input and try again.
+<<< @/scripts/generated/retry_loop.py#example python
 
-<<< @/scripts/s23_require_value.py#example python
+</div>
 
-**Example: `numerator=12.0`, `denominator=0.0`**
+---
+layout: default
+layoutClass: dense placement-code-layout
+---
 
-1. Initial call → `ZERO_DENOMINATOR`.
-2. Loop: increase denominator to `1.0`; retry.
-3. Retry → `(12.0, None)`; leave the loop.
-4. `require_value` records and returns `12.0`.
+# Placement names and partial bindings
 
-::right::
+<div class="declared-failures-code">
 
-<<< @/scripts/s24_retry_loop.py#example python
+<<< @/scripts/generated/placements.py#example python
 
-- Each iteration uses the **latest** `(value, error)`.
-- Success clears `error`; attempts run sequentially.
-- `max_retries` counts calls **after** the initial attempt.
-- No success within budget → `require_value` fails the graph.
-
-<!--
-This deliberately simple recovery rule illustrates loop-carried inputs and Result
-unpacking, not a numerical recommendation for handling division by zero.
-With max_retries=0 and denominator=0.0 the loop is skipped and require_value raises.
-For a solver, the same pattern can adjust mixing, a time step, or another parameter
-before retrying a declared non-convergence error.
--->
+</div>
 
 ---
 layout: section
@@ -488,7 +537,7 @@ layout: section
 class: branch-binding
 ---
 
-# Branch results: Python binding vs. graph interpretation
+# Parsing instead of executing
 
 **WorkGraph executes the builder in Python. The graph language interprets the control flow at run time.**
 
@@ -526,7 +575,6 @@ The compiler creates a **branch placement with one output**. The runtime runs on
 </div>
 </div>
 
-<div class="verdict">The wait is not forgotten: the selected producer → branch output → consumer dependency is encoded in the graph.</div>
 
 <style>
 .branch-binding {
@@ -575,8 +623,6 @@ ordering still requires after=.
 
 # Thoughts: checkpoint after each graph statement
 
-**Two proposals · neither implemented yet**
-
 <div class="grid grid-cols-2 gap-8 statement-checkpoints">
 <div>
 
@@ -598,7 +644,9 @@ ordering still requires after=.
 </div>
 </div>
 
+<!--
 If execution stops after saving `total`, restore it and continue with `product`—without recomputing the addition.
+-->
 
 <style>
 .statement-checkpoints {
@@ -644,13 +692,22 @@ it does NOT verify the proposed per-statement persistence guarantee.
 ### Loop 1 Porting existing plugins
 
 <div class="workflow-eval-loop">
-<div><strong>Rewrite</strong><span>qe + koopmans plugins<br/>to the graph language</span></div>
+<div><strong>Rewrite</strong><span>qe + koopmans plugins<br/>in the graph language</span></div>
 <b>→</b>
 <div><strong>Identify problems</strong><span>What is missing or awkward<br/>in the rewrite?</span></div>
 <b>→</b>
 <div><strong>Revise</strong><span>Revise the language<br/></span></div>
 </div>
-<div class="workflow-eval-return"></div>
+<div class="workflow-eval-return">
+<svg viewBox="0 0 900 40" preserveAspectRatio="none" role="img" aria-label="Revise loops back to Rewrite">
+  <defs>
+    <marker id="eval-porting-return" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0 0 L10 5 L0 10 Z" fill="#1d4ed8" />
+    </marker>
+  </defs>
+  <path d="M765 0 V20 Q765 30 755 30 H145 Q135 30 135 20 V1" fill="none" stroke="#1d4ed8" stroke-width="1.6" vector-effect="non-scaling-stroke" marker-end="url(#eval-porting-return)" />
+</svg>
+</div>
 
 ### Loop 2 WorkGraph users try the language
 
@@ -661,15 +718,25 @@ it does NOT verify the proposed per-statement persistence guarantee.
 <b>→</b>
 <div><strong>Revise</strong><span>Revise the language<br/></span></div>
 </div>
-<div class="workflow-eval-return"></div>
+<div class="workflow-eval-return">
+<svg viewBox="0 0 900 40" preserveAspectRatio="none" role="img" aria-label="Revise loops back to Explore">
+  <defs>
+    <marker id="eval-users-return" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0 0 L10 5 L0 10 Z" fill="#1d4ed8" />
+    </marker>
+  </defs>
+  <path d="M765 0 V20 Q765 30 755 30 H145 Q135 30 135 20 V1" fill="none" stroke="#1d4ed8" stroke-width="1.6" vector-effect="non-scaling-stroke" marker-end="url(#eval-users-return)" />
+</svg>
+</div>
 
 <style>
-.workflow-eval-loop { display: flex; gap: 12px; align-items: center; margin: 0.7rem 0 0.4rem; }
+.workflow-eval-loop { display: flex; gap: 12px; align-items: stretch; margin: 0.7rem 0 0; }
 .workflow-eval-loop > div { flex: 1; padding: 0.8rem 1rem; border: 1px solid #94a3b8; border-radius: 8px; background: #f8fafc; }
 .workflow-eval-loop strong { display: block; color: #1d4ed8; }
 .workflow-eval-loop span { display: block; margin-top: 0.4rem; font-size: 12px; line-height: 1.5; }
-.workflow-eval-loop > b { color: #64748b; }
-.workflow-eval-return { text-align: center; color: #64748b; margin-bottom: 1.3rem; font-size: 12px; }
+.workflow-eval-loop > b { color: #64748b; align-self: center; }
+.workflow-eval-return { height: 36px; margin-bottom: 0.8rem; }
+.workflow-eval-return svg { display: block; width: 100%; height: 100%; overflow: visible; }
 </style>
 
 <!--

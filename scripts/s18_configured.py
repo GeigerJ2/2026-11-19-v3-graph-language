@@ -19,7 +19,8 @@ from aiida.engine import graph, run_get_node
 # region example
 @graph
 def configured(volume: float, settings: Settings) -> float:
-    return scaled_volume(volume=volume, settings=settings)
+    result = scaled_volume(volume=volume, settings=settings)
+    return result.volume
 
 
 # endregion example
@@ -27,7 +28,11 @@ def configured(volume: float, settings: Settings) -> float:
 
 def demo():
     # region launch
-    outputs, node = run_get_node(configured, volume=10.0, settings={'scaling': {}})
+    outputs, node = run_get_node(
+        configured,
+        volume=10.0,
+        settings={'scaling': {}},
+    )
     # endregion launch
     return outputs, node
 

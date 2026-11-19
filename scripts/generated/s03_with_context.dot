@@ -12,16 +12,16 @@ State: finished
 Exit Code: 0" fillcolor="#de707f77" penwidth=0 shape=rectangle style=filled]
 	N27 [label="Int (27)
 value: 5" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N24 -> N25 [label="INPUT_WORK
+flag" color="#000000" style=dashed]
+	N25 -> N27 [label="RETURN
+result" color="#000000" style=dashed]
 	N23 -> N25 [label="INPUT_WORK
 value" color="#000000" style=dashed]
-	N23 -> N26 [label="INPUT_CALC
-value" color="#000000" style=solid]
 	N25 -> N26 [label="CALL_CALC
 CALL" color="#000000" style=dotted]
 	N26 -> N27 [label="CREATE
 result" color="#000000" style=solid]
-	N25 -> N27 [label="RETURN
-result" color="#000000" style=dashed]
-	N24 -> N25 [label="INPUT_WORK
-flag" color="#000000" style=dashed]
+	N23 -> N26 [label="INPUT_CALC
+value" color="#000000" style=solid]
 }

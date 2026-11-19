@@ -16,18 +16,18 @@ State: finished
 Exit Code: 0" fillcolor="#de707f77" penwidth=0 shape=rectangle style=filled]
 	N93 [label="Int (93)
 value: 10" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
-	N86 -> N89 [label="INPUT_WORK
-x" color="#000000" style=dashed]
-	N91 -> N92 [label="INPUT_CALC
-value" color="#000000" style=solid]
-	N89 -> N93 [label="RETURN
-result" color="#000000" style=dashed]
-	N89 -> N92 [label="CALL_CALC
-record" color="#000000" style=dotted]
-	N88 -> N89 [label="INPUT_WORK
-z" color="#000000" style=dashed]
-	N92 -> N93 [label="CREATE
-result" color="#000000" style=solid]
 	N87 -> N89 [label="INPUT_WORK
 y" color="#000000" style=dashed]
+	N88 -> N89 [label="INPUT_WORK
+z" color="#000000" style=dashed]
+	N91 -> N92 [label="INPUT_CALC
+value" color="#000000" style=solid]
+	N89 -> N92 [label="CALL_CALC
+record" color="#000000" style=dotted]
+	N92 -> N93 [label="CREATE
+result" color="#000000" style=solid]
+	N89 -> N93 [label="RETURN
+result" color="#000000" style=dashed]
+	N86 -> N89 [label="INPUT_WORK
+x" color="#000000" style=dashed]
 }

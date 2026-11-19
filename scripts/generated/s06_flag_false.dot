@@ -14,18 +14,18 @@ State: finished
 Exit Code: 0" fillcolor="#de707f77" penwidth=0 shape=rectangle style=filled]
 	N55 [label="Int (55)
 value: 12" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
-	N49 -> N54 [label="INPUT_CALC
-x" color="#000000" style=solid]
-	N54 -> N55 [label="CREATE
-result" color="#000000" style=solid]
 	N51 -> N55 [label="RETURN
 result" color="#000000" style=dashed]
-	N50 -> N51 [label="INPUT_WORK
-flag" color="#000000" style=dashed]
-	N49 -> N51 [label="INPUT_WORK
-value" color="#000000" style=dashed]
-	N53 -> N54 [label="INPUT_CALC
-y" color="#000000" style=solid]
+	N49 -> N54 [label="INPUT_CALC
+x" color="#000000" style=solid]
 	N51 -> N54 [label="CALL_CALC
 branch_1__add" color="#000000" style=dotted]
+	N49 -> N51 [label="INPUT_WORK
+value" color="#000000" style=dashed]
+	N50 -> N51 [label="INPUT_WORK
+flag" color="#000000" style=dashed]
+	N54 -> N55 [label="CREATE
+result" color="#000000" style=solid]
+	N53 -> N54 [label="INPUT_CALC
+y" color="#000000" style=solid]
 }
