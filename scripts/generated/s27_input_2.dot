@@ -1,0 +1,42 @@
+digraph {
+	graph [rankdir=LR]
+	N200 [label="s27_graph_binding:selected_branch (200)
+State: finished
+Exit Code: 0" color=red fillcolor="#8cd499ff" penwidth=6 shape=ellipse style=filled]
+	N199 [label="Int (199)
+value: 2" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N202 [label="Int (202)
+value: 3" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N203 [label="multiply (203)
+State: finished
+Exit Code: 0" fillcolor="#de707f77" penwidth=0 shape=rectangle style=filled]
+	N204 [label="Int (204)
+value: 6" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N205 [label="Int (205)
+value: 1" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N206 [label="add (206)
+State: finished
+Exit Code: 0" fillcolor="#de707f77" penwidth=0 shape=rectangle style=filled]
+	N207 [label="Int (207)
+value: 7" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N200 -> N207 [label="RETURN
+result" color="#000000" style=dashed]
+	N199 -> N200 [label="INPUT_WORK
+first_sum" color="#000000" style=dashed]
+	N199 -> N203 [label="INPUT_CALC
+x" color="#000000" style=solid]
+	N206 -> N207 [label="CREATE
+result" color="#000000" style=solid]
+	N203 -> N204 [label="CREATE
+result" color="#000000" style=solid]
+	N202 -> N203 [label="INPUT_CALC
+y" color="#000000" style=solid]
+	N204 -> N206 [label="INPUT_CALC
+x" color="#000000" style=solid]
+	N200 -> N206 [label="CALL_CALC
+add" color="#000000" style=dotted]
+	N200 -> N203 [label="CALL_CALC
+branch_2__multiply" color="#000000" style=dotted]
+	N205 -> N206 [label="INPUT_CALC
+y" color="#000000" style=solid]
+}

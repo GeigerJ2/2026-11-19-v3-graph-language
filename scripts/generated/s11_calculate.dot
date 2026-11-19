@@ -1,0 +1,46 @@
+digraph {
+	graph [rankdir=LR]
+	N80 [label="s11_task_checkpoints:calculate (80)
+State: finished
+Exit Code: 0" color=red fillcolor="#8cd499ff" penwidth=6 shape=ellipse style=filled]
+	N77 [label="Int (77)
+value: 2" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N78 [label="Int (78)
+value: 3" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N79 [label="Int (79)
+value: 4" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N82 [label="multiply (82)
+State: finished
+Exit Code: 0" fillcolor="#de707f77" penwidth=0 shape=rectangle style=filled]
+	N83 [label="Int (83)
+value: 6" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N84 [label="add (84)
+State: finished
+Exit Code: 0" fillcolor="#de707f77" penwidth=0 shape=rectangle style=filled]
+	N85 [label="Int (85)
+value: 10" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N80 -> N82 [label="CALL_CALC
+multiply" color="#000000" style=dotted]
+	N78 -> N82 [label="INPUT_CALC
+y" color="#000000" style=solid]
+	N80 -> N84 [label="CALL_CALC
+add" color="#000000" style=dotted]
+	N78 -> N80 [label="INPUT_WORK
+y" color="#000000" style=dashed]
+	N84 -> N85 [label="CREATE
+result" color="#000000" style=solid]
+	N79 -> N84 [label="INPUT_CALC
+y" color="#000000" style=solid]
+	N77 -> N80 [label="INPUT_WORK
+x" color="#000000" style=dashed]
+	N80 -> N85 [label="RETURN
+result" color="#000000" style=dashed]
+	N77 -> N82 [label="INPUT_CALC
+x" color="#000000" style=solid]
+	N79 -> N80 [label="INPUT_WORK
+z" color="#000000" style=dashed]
+	N83 -> N84 [label="INPUT_CALC
+x" color="#000000" style=solid]
+	N82 -> N83 [label="CREATE
+result" color="#000000" style=solid]
+}

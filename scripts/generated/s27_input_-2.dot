@@ -1,0 +1,42 @@
+digraph {
+	graph [rankdir=LR]
+	N191 [label="s27_graph_binding:selected_branch (191)
+State: finished
+Exit Code: 0" color=red fillcolor="#8cd499ff" penwidth=6 shape=ellipse style=filled]
+	N190 [label="Int (190)
+value: -2" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N193 [label="Int (193)
+value: 2" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N194 [label="add (194)
+State: finished
+Exit Code: 0" fillcolor="#de707f77" penwidth=0 shape=rectangle style=filled]
+	N195 [label="Int (195)
+value: 0" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N196 [label="Int (196)
+value: 1" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N197 [label="add (197)
+State: finished
+Exit Code: 0" fillcolor="#de707f77" penwidth=0 shape=rectangle style=filled]
+	N198 [label="Int (198)
+value: 1" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N191 -> N197 [label="CALL_CALC
+add" color="#000000" style=dotted]
+	N196 -> N197 [label="INPUT_CALC
+y" color="#000000" style=solid]
+	N190 -> N194 [label="INPUT_CALC
+x" color="#000000" style=solid]
+	N195 -> N197 [label="INPUT_CALC
+x" color="#000000" style=solid]
+	N194 -> N195 [label="CREATE
+result" color="#000000" style=solid]
+	N191 -> N194 [label="CALL_CALC
+branch_2__add" color="#000000" style=dotted]
+	N191 -> N198 [label="RETURN
+result" color="#000000" style=dashed]
+	N190 -> N191 [label="INPUT_WORK
+first_sum" color="#000000" style=dashed]
+	N197 -> N198 [label="CREATE
+result" color="#000000" style=solid]
+	N193 -> N194 [label="INPUT_CALC
+y" color="#000000" style=solid]
+}

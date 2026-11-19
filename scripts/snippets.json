@@ -1,0 +1,261 @@
+{
+  "snippets": [
+    {
+      "id": 1,
+      "file": "s01_multiply_add_workchain.py",
+      "title": "MultiplyAdd as WorkChain and as graph",
+      "status": "runnable"
+    },
+    {
+      "id": 2,
+      "file": "s02_multiply_add_graph.py",
+      "title": "MultiplyAdd as WorkChain and as graph",
+      "status": "runnable"
+    },
+    {
+      "id": 3,
+      "file": "s03_debug_workchain.py",
+      "title": "Debugging WorkChains",
+      "status": "runnable"
+    },
+    {
+      "id": 4,
+      "file": "s04_debug_graph.py",
+      "title": "Debugging graphs",
+      "status": "expected-build-error"
+    },
+    {
+      "id": 5,
+      "file": "s05_fix_prior_binding.py",
+      "title": "Debugging graphs",
+      "status": "runnable"
+    },
+    {
+      "id": 6,
+      "file": "s06_fix_else_binding.py",
+      "title": "Debugging graphs",
+      "status": "runnable"
+    },
+    {
+      "id": 7,
+      "file": "s07_task_interpreter.py",
+      "title": "Python executes task bodies; AiiDA executes graphs",
+      "status": "runnable"
+    },
+    {
+      "id": 8,
+      "file": "s08_inline_interpreter.py",
+      "title": "Python executes task bodies; AiiDA executes graphs",
+      "status": "runnable"
+    },
+    {
+      "id": 9,
+      "file": "s09_numpy_task.py",
+      "title": "Two languages, two execution boundaries",
+      "status": "runnable"
+    },
+    {
+      "id": 10,
+      "file": "s10_numpy_graph.py",
+      "title": "Two languages, two execution boundaries",
+      "status": "runnable"
+    },
+    {
+      "id": 11,
+      "file": "s11_task_checkpoints.py",
+      "title": "Checkpointing and Provenance",
+      "status": "runnable"
+    },
+    {
+      "id": 12,
+      "file": "s12_inline_checkpoints.py",
+      "title": "Checkpointing and Provenance",
+      "status": "runnable"
+    },
+    {
+      "id": 13,
+      "file": "s13_map_tasks.py",
+      "title": "Map and reduce",
+      "status": "shared-definitions"
+    },
+    {
+      "id": 14,
+      "file": "s14_map_reduce.py",
+      "title": "Map and reduce",
+      "status": "runnable"
+    },
+    {
+      "id": 15,
+      "file": "s15_placement_task.py",
+      "title": "Placement names and partial bindings",
+      "status": "shared-definitions"
+    },
+    {
+      "id": 16,
+      "file": "s16_placements.py",
+      "title": "Placement names and partial bindings",
+      "status": "partially-supported"
+    },
+    {
+      "id": 17,
+      "file": "s17_port_model.py",
+      "title": "Structured inputs with PortModel",
+      "status": "shared-definitions"
+    },
+    {
+      "id": 18,
+      "file": "s18_configured.py",
+      "title": "Structured inputs with PortModel",
+      "status": "runnable"
+    },
+    {
+      "id": 19,
+      "file": "s19_existing_processes.py",
+      "title": "CalcJob and WorkChain tasks",
+      "status": "shared-definitions"
+    },
+    {
+      "id": 20,
+      "file": "s20_runtime_config.py",
+      "title": "CalcJob and WorkChain tasks",
+      "status": "runnable"
+    },
+    {
+      "id": 21,
+      "file": "s21_division_task.py",
+      "title": "Declared failures",
+      "status": "shared-definitions"
+    },
+    {
+      "id": 22,
+      "file": "s22_declared_failure.py",
+      "title": "Declared failures",
+      "status": "runnable"
+    },
+    {
+      "id": 23,
+      "file": "s23_require_value.py",
+      "title": "Iterating on a declared failure",
+      "status": "shared-definitions"
+    },
+    {
+      "id": 24,
+      "file": "s24_retry_loop.py",
+      "title": "Iterating on a declared failure",
+      "status": "runnable"
+    },
+    {
+      "id": 25,
+      "file": "s25_workgraph_binding.py",
+      "title": "Branch results: Python binding vs. graph interpretation",
+      "status": "workgraph-reference"
+    },
+    {
+      "id": 26,
+      "file": "s26_workgraph_context.py",
+      "title": "Branch results: Python binding vs. graph interpretation",
+      "status": "workgraph-reference"
+    },
+    {
+      "id": 27,
+      "file": "s27_graph_binding.py",
+      "title": "Branch results: Python binding vs. graph interpretation",
+      "status": "runnable"
+    },
+    {
+      "id": 28,
+      "file": "s28_explicit_checkpoint_proposal.py",
+      "title": "Thoughts: checkpoint after each graph statement",
+      "status": "unimplemented-proposal"
+    },
+    {
+      "id": 29,
+      "file": "s29_automatic_checkpoint_proposal.py",
+      "title": "Thoughts: checkpoint after each graph statement",
+      "status": "current-baseline-only"
+    },
+    {
+      "id": 30,
+      "file": "s30_branch_task.py",
+      "title": "What provenance records: tasks and data\u2014not the `if`",
+      "status": "runnable"
+    },
+    {
+      "id": 31,
+      "file": "s31_branch_graph.py",
+      "title": "What provenance records: tasks and data\u2014not the `if`",
+      "status": "runnable"
+    },
+    {
+      "id": 32,
+      "file": "s32_branch_task_ir.py",
+      "title": "Who interprets the `if`\u2014and what does GraphIR see?",
+      "status": "runnable"
+    },
+    {
+      "id": 33,
+      "file": "s33_branch_inline_ir.py",
+      "title": "Who interprets the `if`\u2014and what does GraphIR see?",
+      "status": "runnable"
+    },
+    {
+      "id": 34,
+      "file": "s34_arithmetic_task.py",
+      "title": "Two operations: what does provenance record?",
+      "status": "runnable"
+    },
+    {
+      "id": 35,
+      "file": "s35_arithmetic_inline.py",
+      "title": "Two operations: what does provenance record?",
+      "status": "runnable"
+    }
+  ],
+  "concepts": [
+    {
+      "file": "concept_01.py",
+      "status": "contextual-fragment",
+      "provenance": "See s01_multiply_add_workchain and s02_multiply_add_graph."
+    },
+    {
+      "file": "concept_02.py",
+      "status": "contextual-fragment",
+      "provenance": "See s01_multiply_add_workchain and s02_multiply_add_graph."
+    },
+    {
+      "file": "concept_03.py",
+      "status": "contextual-fragment",
+      "provenance": "See s01_multiply_add_workchain and s02_multiply_add_graph."
+    },
+    {
+      "file": "concept_04.py",
+      "status": "contextual-fragment",
+      "provenance": "See s01_multiply_add_workchain and s02_multiply_add_graph."
+    },
+    {
+      "file": "concept_05.py",
+      "status": "contextual-fragment",
+      "provenance": "See s01_multiply_add_workchain and s02_multiply_add_graph."
+    },
+    {
+      "file": "concept_06.py",
+      "status": "contextual-fragment",
+      "provenance": "See s01_multiply_add_workchain and s02_multiply_add_graph."
+    },
+    {
+      "file": "concept_07.py",
+      "status": "contextual-fragment",
+      "provenance": "See s01_multiply_add_workchain and s02_multiply_add_graph."
+    },
+    {
+      "file": "concept_08.py",
+      "status": "contextual-fragment",
+      "provenance": "See s01_multiply_add_workchain and s02_multiply_add_graph."
+    },
+    {
+      "file": "concept_09.py",
+      "status": "contextual-fragment",
+      "provenance": "See s01_multiply_add_workchain and s02_multiply_add_graph."
+    }
+  ]
+}

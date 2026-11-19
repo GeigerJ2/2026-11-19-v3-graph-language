@@ -1,0 +1,22 @@
+digraph {
+	graph [rankdir=LR]
+	N73 [label="s10_numpy_graph:analyze (73)
+State: finished
+Exit Code: 0" color=red fillcolor="#8cd499ff" penwidth=6 shape=ellipse style=filled]
+	N72 [label="List (72)" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N75 [label="summarize (75)
+State: finished
+Exit Code: 0" fillcolor="#de707f77" penwidth=0 shape=rectangle style=filled]
+	N76 [label="Float (76)
+value: 2.0" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N73 -> N75 [label="CALL_CALC
+summarize" color="#000000" style=dotted]
+	N72 -> N75 [label="INPUT_CALC
+values" color="#000000" style=solid]
+	N72 -> N73 [label="INPUT_WORK
+values" color="#000000" style=dashed]
+	N73 -> N76 [label="RETURN
+result" color="#000000" style=dashed]
+	N75 -> N76 [label="CREATE
+result" color="#000000" style=solid]
+}

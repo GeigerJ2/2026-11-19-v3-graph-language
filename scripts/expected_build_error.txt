@@ -1,0 +1,6 @@
+GraphLanguageError: broken.py:11:5: __main__:broken:
+  without an `else` arm the branch keeps the prior
+  binding, so `total` must be assigned before the `if`;
+  assign it first or add an `else` arm instead
+    if flag:
+    ^

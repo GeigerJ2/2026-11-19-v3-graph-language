@@ -1,0 +1,33 @@
+digraph {
+	graph [rankdir=LR]
+	N266 [label="s35_arithmetic_inline:arithmetic_inline (266)
+State: finished
+Exit Code: 0" color=red fillcolor="#8cd499ff" penwidth=6 shape=ellipse style=filled]
+	N263 [label="Int (263)
+value: 2" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N264 [label="Int (264)
+value: 3" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N265 [label="Int (265)
+value: 4" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N268 [label="Int (268)
+value: 20" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N269 [label="record (269)
+State: finished
+Exit Code: 0" fillcolor="#de707f77" penwidth=0 shape=rectangle style=filled]
+	N270 [label="Int (270)
+value: 20" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N266 -> N269 [label="CALL_CALC
+record" color="#000000" style=dotted]
+	N265 -> N266 [label="INPUT_WORK
+z" color="#000000" style=dashed]
+	N264 -> N266 [label="INPUT_WORK
+y" color="#000000" style=dashed]
+	N263 -> N266 [label="INPUT_WORK
+x" color="#000000" style=dashed]
+	N269 -> N270 [label="CREATE
+result" color="#000000" style=solid]
+	N266 -> N270 [label="RETURN
+result" color="#000000" style=dashed]
+	N268 -> N269 [label="INPUT_CALC
+value" color="#000000" style=solid]
+}

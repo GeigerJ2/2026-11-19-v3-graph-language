@@ -1,173 +1,145 @@
-# Runnable slide examples
+# Slide snippets and verified provenance
 
-One standalone Python script per slide in [`../slides.md`](../slides.md).
-Each script validates its expected outcomes and generates real provenance diagrams
-from stored AiiDA nodes using `aiida.tools.visualization.Graph` **inside the script**.
-There is no separate rendering step and no hand-drawn substitute for provenance.
+The Python in [`../slides.md`](../slides.md) is imported directly from these files
+using Slidev's `<<< ...#region` syntax. Edit the source here, not a second copy in
+the Markdown. The concept table uses `ConceptCode.vue` to preserve its custom
+colors while reading the nine `concept_*.py` fragments from disk. The two error
+excerpts are external `.txt` snippets as well.
 
-## Requirements
+The previous scripts, renderer, and generated artifacts are preserved unchanged
+in [`../backup_scripts/`](../backup_scripts/). The renderer in this folder is a
+copy of that existing `render_provenance.py`, not a new diagram generator.
 
-Run from the aiida-core repository root with its `uv` environment:
+## Run everything
 
-- This checkout's graph-language API and project dependencies.
-- An initialized AiiDA profile. The scripts default to `graph-examples`; use
-  `--profile YOUR_PROFILE` to select another existing profile.
-- Graphviz's `dot` executable on `PATH` for SVG rendering.
-- For slide 06, a local `/bin/bash` executable and local process execution.
-
-All examples execute locally through `run_get_node`; no daemon or message broker
-is required. They store nodes in the selected profile, including the deliberately
-failed examples. They do not change the profile's polling configuration.
-
-## Run
-
-Run a single example:
+From the repository root:
 
 ```bash
-uv run python pres/2026-11-19-v3-graph-language/scripts/01_control_flow.py
+uv run python pres/2026-11-19-v3-graph-language/scripts/run_all.py
+uv run python pres/2026-11-19-v3-graph-language/scripts/verify_snippets.py
 ```
 
-Choose a profile and output directory:
+By default, execution creates a **fresh isolated SQLite profile in a temporary
+directory** and prints its configuration path. It does not use or modify your
+normal AiiDA profile. The directory is retained, not deleted: the stored process
+PKs and UUIDs in the results refer to this database. No daemon, database service,
+or message broker is needed.
+
+Requirements: this checkout's `uv` environment, NumPy, Graphviz's `dot`, and
+`/bin/bash` for the local arithmetic CalcJobs. All are used through the project's
+existing APIs. The CalcJob examples create a `localhost` computer and an
+`add@localhost` bash code in the selected profile; calculation work directories
+are retained for the stored `RemoteData` references.
+
+To explicitly opt into an existing profile instead:
 
 ```bash
-uv run python pres/2026-11-19-v3-graph-language/scripts/03_parallel_map.py \
-  --profile graph-examples --output-dir /tmp/graph-slide-provenance
+uv run python pres/2026-11-19-v3-graph-language/scripts/run_all.py --profile graph-examples
 ```
 
-Run all eight sequentially, stopping if an example fails its checks:
+This stores new nodes in that profile and may create the demo computer and code.
+It does not change polling options.
+
+## Run one example
+
+Every `sNN_*.py` file is also an entry point. Shared-definition snippets delegate
+to the graph that exercises them; intentionally unsupported snippets report their
+status without fabricating a run.
 
 ```bash
-for script in pres/2026-11-19-v3-graph-language/scripts/[0-9][0-9]_*.py; do
-  uv run python "$script" --profile graph-examples || break
-done
+uv run python pres/2026-11-19-v3-graph-language/scripts/s14_map_reduce.py
+uv run python pres/2026-11-19-v3-graph-language/scripts/run_all.py --snippet 22 24
 ```
 
-Each script prints its root process PK, result or expected failure status, and
-rendered SVG path. By default, SVGs and Graphviz source files go into `generated/`
-next to the scripts, independent of the current working directory. Re-running an
-example creates new stored provenance and overwrites its diagram files.
+Use `--output-dir` and `--assets-dir` for a separate partial-run report:
 
-## Examples and expected outcomes
+```bash
+uv run python pres/2026-11-19-v3-graph-language/scripts/run_all.py --snippet 24 \
+  --output-dir /tmp/slide-retry --assets-dir /tmp/slide-retry/assets
+```
 
-| Slide | Script | Checks and diagrams |
+Each invocation overwrites its `results.json`, Markdown index, gallery, and
+same-named diagrams. A failed execution saves a partial report with
+`completed: false` and exits unsuccessfully; unexpected errors are not suppressed.
+
+## Outputs
+
+- [`generated/results.json`](generated/results.json): process PKs, UUIDs, scalar
+  results, statuses, retained profile location, and rendering paths. Diagram paths
+  are relative to the presentation directory.
+- [`generated/README.md`](generated/README.md): clickable index of the verified
+  provenance diagrams and notes for non-executable examples.
+- `generated/*.dot`: unmodified AiiDA-generated provenance graphs.
+- [`../public/assets/provenance/`](../public/assets/provenance/): styled SVGs.
+- [`../public/assets/provenance/index.html`](../public/assets/provenance/index.html):
+  browsable diagram gallery (also served at `/assets/provenance/index.html` by Slidev).
+
+`run_all.py` builds graph definitions before execution, checks numerical results,
+and traverses **real stored nodes and links** with `aiida.tools.visualization.Graph`.
+It then passes the resulting DOT files to the existing renderer. No hand-drawn
+nodes, branches, or checkpoint boundaries are presented as provenance.
+
+`verify_snippets.py` checks Python syntax, every slide import and source region,
+concept-fragment coverage, image references, and the rendered SVG node sets and
+edge counts against the original DOT graphs. Use `--sources-only` to check source
+files without requiring an execution report.
+
+You can restyle a saved graph without loading a profile or rerunning its workflow:
+
+```bash
+uv run python pres/2026-11-19-v3-graph-language/scripts/render_provenance.py \
+  pres/2026-11-19-v3-graph-language/scripts/generated/s24_denominator_0.dot
+```
+
+Pass `--output-dir .../public/assets/provenance` to overwrite a gallery SVG;
+the renderer's original default remains `public/assets/`.
+
+## Source inventory and execution policy
+
+[`snippets.json`](snippets.json) maps all **35 Python snippets and nine concept
+fragments** to their slide titles and execution policies. The source-file numbers
+are snippet IDs, not slide numbers, so adding prose slides does not rename files.
+
+| IDs | Example | Verification |
 | --- | --- | --- |
-| 01 | `01_control_flow.py` | `choose(10, True) = 11`, `choose(10, False) = 12`; two SVGs showing the selected task. |
-| 02 | `02_retry.py` | Two declared unstable attempts followed by success, returning `10`; zero retry budget causes the guard task to fail and the graph to finish with exit status `400`. Two SVGs. |
-| 03 | `03_parallel_map.py` | Expand three cubic structures by a linear factor of `1.05`, then reduce their volumes to `38.201625`. Checks the original structures were not mutated. One SVG. |
-| 04 | `04_port_model.py` | Nested `PortModel` defaults produce `11.57625`; checks the per-field input nodes. One SVG. |
-| 05 | `05_pydantic.py` | Equivalent Pydantic declaration produces `11.57625`, with the same per-field input checks. One SVG. |
-| 06 | `06_existing_processes.py` | An existing multiply-add WorkChain followed by an addition CalcJob produces `14`. One SVG including nested processes. |
-| 07 | `07_missing_context.py` | The true path returns `5`; the false path raises the expected missing-`ctx.total` `AttributeError`. Two SVGs, including the excepted WorkChain. |
-| 08 | `08_build_validation.py` | Rejects the broken graph during `build()`, then executes both fixed branches, returning `11` and `12`. Two SVGs for the fixed graph. |
+| 01–02 | MultiplyAdd WorkChain vs graph | Both return `10`, using real local CalcJobs. |
+| 03 | Missing WorkChain context | True branch returns `5`; false branch raises the expected `AttributeError`; both have provenance. |
+| 04 | Broken graph | `build()` must reject the missing binding. No execution means no provenance. |
+| 05–06 | Fixed branch bindings | Both boolean branches are run: prior binding gives `11`/`10`; explicit else gives `11`/`12`. |
+| 07–08 | Task vs inline interpreter | Both compute `10`; an explicit `record` wrapper materializes the inline helper's output. |
+| 09–10 | NumPy task and graph | Both return mean `2.0`. |
+| 11–12 | Task vs inline checkpoints | Both return `10`; diagrams show their different task boundaries, not a crash-recovery claim. |
+| 13–14 | Typed structure map/reduce | Returns `38.201625`; input structures remain unchanged. |
+| 15–16 | Placement names and partial bindings | Aliased placements return `8`; `partial(...)` is rejected in this checkout and recorded as unsupported. |
+| 17–18 | PortModel | Nested defaults produce `11.57625`. |
+| 19–20 | Existing processes/runtime config | WorkChain and CalcJob integration returns `14`. |
+| 21–22 | Declared failures | Normal division returns `4.0`; zero denominator selects a `0.0` fallback. |
+| 23–24 | Retry loop | Zero denominator retries to `12.0`; normal division gives `4.0`; zero retry budget fails with exit status `400`. All three roots are rendered. |
+| 25–26 | WorkGraph comparison | Contextual WorkGraph builder fragments, not runnable AiiDA graph-language workflows; no AiiDA provenance is claimed. |
+| 27 | Graph branch binding | Both branches return `1`/`7`. |
+| 28 | Explicit checkpoint proposal | `checkpoint()` is unimplemented; kept as proposal source, not executed. |
+| 29 | Automatic checkpoint proposal | Runs the current arithmetic baseline, returning `20`; does **not** claim proposed per-statement persistence. |
+| 30–31 | Branch provenance comparison | Both task and graph variants return `1`/`6`; both branches are rendered. |
+| 32–33 | Branch interpreter comparison | Both variants return `1`/`6`; inline operations are not invented provenance nodes. |
+| 34–35 | Arithmetic provenance comparison | Both return `20`, with different task boundaries. |
 
-Slides 02 and 07 intentionally log exception tracebacks. Their scripts verify the
-expected failures and still exit successfully. Other failures are not suppressed.
-The invalid graph on slide 08 never executes, so it has **no stored provenance**;
-only its fixed version can have provenance rendered.
+The `concept_*.py` files are explicitly contextual fragments, including a graph
+signature and WorkChain method excerpts. They are syntax-checked and displayed
+from source; the corresponding complete workflows in snippets 01–02 supply the
+real executable comparison.
 
-## Slide 06: local execution setup
+Expected failure paths deliberately emit AiiDA exception reports. The runner
+checks these failures and still succeeds. The prototype `partial` and checkpoint
+examples are not patched into the engine or silently replaced with different code.
 
-Without `--code`, the integration example creates or reuses a demo computer named
-`graph-demo-localhost` (`core.local` transport, `core.direct` scheduler) and an
-installed code named `graph-demo-bash` (`/bin/bash`, `core.arithmetic.add`). Its work
-directory is created under the system temporary directory and is retained for
-AiiDA's remote-folder references. The script does not delete computers, codes,
-calculation directories, or stored nodes.
-
-To use an existing compatible installed bash code instead:
-
-```bash
-uv run python pres/2026-11-19-v3-graph-language/scripts/06_existing_processes.py \
-  --profile graph-examples --code 'your-bash-code@your-computer'
-```
-
-This script uses the current `runtime_config` API instead of the slide's obsolete
-`task_metadata` keyword. The code is supplied to both placements through execution
-configuration; explicit scheduler options apply to `add_calc`. The stock
-`MultiplyAddWorkChain` does not expose scheduler options and uses its internal
-arithmetic CalcJob's resource defaults.
-
-## Presentation-only DOT → SVG styling
-
-`render_provenance.py` restyles existing AiiDA-generated DOT digraphs without
-loading a profile or executing any workflows. It requires Graphviz's `dot` and
-the project's Python `graphviz` package. Run from this presentation directory:
+## Presentation build
 
 ```bash
-uv run python scripts/render_provenance.py \
-  scripts/generated/09_multiply_add_0 \
-  scripts/generated/09_multiply_add_1
+cd pres/2026-11-19-v3-graph-language
+bun run build
 ```
 
-The slide-ready SVGs are written to `public/assets/09_multiply_add_0-slides.svg`
-and `public/assets/09_multiply_add_1-slides.svg`. Use `--output-dir` to change the
-destination. The source DOT and original SVGs remain untouched. Every node, edge,
-and label is preserved, including PKs, execution states, and link types; only
-layout and styling change. The renderer supports flat AiiDA digraphs, not nested
-subgraphs.
-
-## Standalone annotations
-
-The retry, structure, and model examples use eager annotations. This preserves
-concrete type objects when tasks defined in `__main__` are serialized; postponed
-annotation strings can otherwise lose their type-name globals in this execution
-path. No engine code is patched by these examples.
-
-## Interpreter comparison
-
-`10_interpreters.py` runs the task-body and graph-body `if` examples for both
-branches (`x=-2` and `x=2`, with `y=3`). It asserts the result, root input links,
-selected child task, result creator, and workflow return link. It saves original
-AiiDA DOT/SVG files under `generated/` and styled SVGs under `public/assets/`.
-
-```bash
-uv run python pres/2026-11-19-v3-graph-language/scripts/10_interpreters.py \
-  --profile graph-examples
-```
-
-These provenance SVGs are retained as a separate comparison. The `choose_graph` node is the
-root workflow process, not a node for the condition. Its selected `add` child
-creates the result, which the root returns. The positive-input run calls only
-`multiply`. Both cases were verified in an isolated local SQLite profile.
-
-## GraphIR interpreter visualization
-
-The interpreter slide now uses `11_interpreter_ir.py`, not provenance diagrams:
-
-```bash
-uv run python pres/2026-11-19-v3-graph-language/scripts/11_interpreter_ir.py
-```
-
-No profile is required. The script builds both graphs, checks the actual IR
-placement kinds and inline operations, and saves full JSON/Mermaid under
-`generated/`, plus compact SVG views under `public/assets/`. The left-hand task
-is placed in a minimal wrapper graph: its Python body is opaque to GraphIR.
-The right-hand graph has an inline comparison and inline arithmetic in both
-branch arms. The final `record` task creates a stored return value, as required
-for a root workflow. The compact SVG collapses region port wiring and shows the
-branch output as a selected-result connector, not an executable placement.
-
-## Arithmetic boundaries
-
-`12_arithmetic_boundaries.py` generates the three arithmetic comparison slides:
-
-```bash
-uv run python pres/2026-11-19-v3-graph-language/scripts/12_arithmetic_boundaries.py \
-  --profile graph-examples
-```
-
-It compiles and runs `(x + y) * z` as one Python task, inline graph operations
-followed by a `record` task, and separate `add`/`multiply` tasks. All three were
-verified with `x=2, y=3, z=4`, producing `20`. Assertions check IR placement kinds,
-inline operator kinds, child processes, output creators, and workflow returns.
-The generated JSON/Mermaid, IR SVGs, and stored-provenance SVGs are retained.
-The checkpoint slide describes the proposed per-statement persistence design,
-explicitly labeled as not yet implemented for inline statements. This script
-verifies current execution structure, not the proposed checkpoint guarantee,
-and does not simulate crash recovery.
-
-## Verification
-
-All eight scripts were executed sequentially with the `graph-examples` profile,
-without a daemon or broker, and produced twelve SVGs. The SVGs and their Graphviz
-sources are generated artifacts, not portable copies of the profile's database.
+Building the presentation resolves snippet imports but does not execute workflows.
+The old GraphIR illustrations remain in `public/assets/`; their original generators
+are archived in `backup_scripts/`. New provenance-comparison images in the appendix
+use the verified outputs from this folder.

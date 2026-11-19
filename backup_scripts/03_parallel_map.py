@@ -45,7 +45,7 @@ def expand_cell(structure: StructureData) -> StructureData:
 
 
 @task
-def mean_cell_volume(structures: DataList) -> float:
+def mean_cell_volume(structures: DataList[StructureData]) -> float:
     """Average the cell volumes of the mapped structures.
 
     :param structures: mapped ``StructureData`` nodes.
@@ -62,7 +62,7 @@ def mean_cell_volume(structures: DataList) -> float:
 
 
 @graph
-def mean_expanded_volume(structures: DataList) -> float:
+def mean_expanded_volume(structures: DataList[StructureData]) -> float:
     """Expand each structure in parallel, then average the expanded volumes."""
     expanded = par_map(expand_cell, structures)
     return mean_cell_volume(structures=expanded)

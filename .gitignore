@@ -1,3 +1,8 @@
+# Local Python / OS artifacts
+__pycache__/
+*.py[cod]
+.DS_Store
+
 # Node / bun
 node_modules/
 *.log

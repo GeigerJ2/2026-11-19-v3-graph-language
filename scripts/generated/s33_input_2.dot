@@ -1,0 +1,29 @@
+digraph {
+	graph [rankdir=LR]
+	N253 [label="s33_branch_inline_ir:choose_graph (253)
+State: finished
+Exit Code: 0" color=red fillcolor="#8cd499ff" penwidth=6 shape=ellipse style=filled]
+	N251 [label="Int (251)
+value: 2" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N252 [label="Int (252)
+value: 3" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N255 [label="Int (255)
+value: 6" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N256 [label="record (256)
+State: finished
+Exit Code: 0" fillcolor="#de707f77" penwidth=0 shape=rectangle style=filled]
+	N257 [label="Int (257)
+value: 6" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N255 -> N256 [label="INPUT_CALC
+value" color="#000000" style=solid]
+	N251 -> N253 [label="INPUT_WORK
+x" color="#000000" style=dashed]
+	N256 -> N257 [label="CREATE
+result" color="#000000" style=solid]
+	N252 -> N253 [label="INPUT_WORK
+y" color="#000000" style=dashed]
+	N253 -> N257 [label="RETURN
+result" color="#000000" style=dashed]
+	N253 -> N256 [label="CALL_CALC
+record" color="#000000" style=dotted]
+}

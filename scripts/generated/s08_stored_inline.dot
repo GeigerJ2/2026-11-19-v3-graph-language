@@ -1,0 +1,33 @@
+digraph {
+	graph [rankdir=LR]
+	N64 [label="s08_inline_interpreter:stored_inline (64)
+State: finished
+Exit Code: 0" color=red fillcolor="#8cd499ff" penwidth=6 shape=ellipse style=filled]
+	N61 [label="Int (61)
+value: 2" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N62 [label="Int (62)
+value: 3" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N63 [label="Int (63)
+value: 4" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N66 [label="Int (66)
+value: 10" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N67 [label="record (67)
+State: finished
+Exit Code: 0" fillcolor="#de707f77" penwidth=0 shape=rectangle style=filled]
+	N68 [label="Int (68)
+value: 10" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N63 -> N64 [label="INPUT_WORK
+z" color="#000000" style=dashed]
+	N64 -> N67 [label="CALL_CALC
+record" color="#000000" style=dotted]
+	N62 -> N64 [label="INPUT_WORK
+y" color="#000000" style=dashed]
+	N61 -> N64 [label="INPUT_WORK
+x" color="#000000" style=dashed]
+	N64 -> N68 [label="RETURN
+result" color="#000000" style=dashed]
+	N66 -> N67 [label="INPUT_CALC
+value" color="#000000" style=solid]
+	N67 -> N68 [label="CREATE
+result" color="#000000" style=solid]
+}

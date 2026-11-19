@@ -1,0 +1,29 @@
+digraph {
+	graph [rankdir=LR]
+	N157 [label="s22_declared_failure:ratio_or_zero (157)
+State: finished
+Exit Code: 0" color=red fillcolor="#8cd499ff" penwidth=6 shape=ellipse style=filled]
+	N155 [label="Float (155)
+value: 12.0" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N156 [label="Float (156)
+value: 3.0" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N159 [label="divide (159)
+State: finished
+Exit Code: 0" fillcolor="#de707f77" penwidth=0 shape=rectangle style=filled]
+	N160 [label="Float (160)
+value: 4.0" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N157 -> N159 [label="CALL_CALC
+divide" color="#000000" style=dotted]
+	N156 -> N159 [label="INPUT_CALC
+denominator" color="#000000" style=solid]
+	N155 -> N159 [label="INPUT_CALC
+numerator" color="#000000" style=solid]
+	N155 -> N157 [label="INPUT_WORK
+numerator" color="#000000" style=dashed]
+	N156 -> N157 [label="INPUT_WORK
+denominator" color="#000000" style=dashed]
+	N157 -> N160 [label="RETURN
+result" color="#000000" style=dashed]
+	N159 -> N160 [label="CREATE
+value" color="#000000" style=solid]
+}

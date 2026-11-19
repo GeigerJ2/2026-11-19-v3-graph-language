@@ -42,71 +42,13 @@ layoutClass: side-by-side
 
 ::left::
 
-```python
-from aiida.calculations.arithmetic.add import ArithmeticAddCalculation
-from aiida.engine import ToContext, WorkChain, calcfunction
-from aiida.orm import Code, Int
-
-
-@calcfunction
-def multiply(x, y):
-    return x * y
-
-
-class MultiplyAddWorkChain(WorkChain):
-    @classmethod
-    def define(cls, spec):
-        super().define(spec)
-        spec.input('x', valid_type=Int)
-        spec.input('y', valid_type=Int)
-        spec.input('z', valid_type=Int)
-        spec.input('code', valid_type=Code)
-        spec.outline(
-            cls.multiply,
-            cls.add,
-            cls.result,
-        )
-        spec.output('result', valid_type=Int)
-
-    def multiply(self):
-        self.ctx.product = multiply(self.inputs.x, self.inputs.y)
-
-    def add(self):
-        future = self.submit(
-            ArithmeticAddCalculation,
-            x=self.ctx.product,
-            y=self.inputs.z,
-            code=self.inputs.code,
-        )
-        return ToContext(addition=future)
-
-    def result(self):
-        self.out('result', self.ctx.addition.outputs.sum)
-```
+<<< @/scripts/s01_multiply_add_workchain.py#example python
 
 ::right::
 
 <v-click>
 
-```python
-from aiida.calculations.arithmetic.add import ArithmeticAddCalculation
-from aiida.engine import graph, task
-from aiida.orm import Code
-
-add_calc = task(ArithmeticAddCalculation)
-
-
-@task
-def multiply(x: int, y: int) -> int:
-    return x * y
-
-
-@graph
-def multiply_add(x: int, y: int, z: int, code: Code) -> int | float:
-    product = multiply(x=x, y=y)
-    total = add_calc(x=product, y=z, code=code)
-    return total.sum
-```
+<<< @/scripts/s02_multiply_add_graph.py#example python
 
 </v-click>
 
@@ -131,48 +73,16 @@ layoutClass: dense
 
 ::left::
 
-```python
-from aiida.engine import WorkChain, calcfunction, if_
-from aiida.orm import Bool, Int
-
-
-@calcfunction
-def increment(value: Int) -> Int:
-    return value + 1
-
-
-class ConditionalCtxChain(WorkChain):
-    @classmethod
-    def define(cls, spec):
-        super().define(spec)
-        spec.input('value', valid_type=Int)
-        spec.input('flag', valid_type=Bool)
-        spec.output('result', valid_type=Int)
-        spec.outline(
-            if_(cls.should_add)(cls.add_one),
-            cls.finish,
-        )
-
-    def should_add(self):
-        return self.inputs.flag.value
-
-    def add_one(self):
-        self.ctx.total = increment(self.inputs.value)
-
-    def finish(self):
-        self.out('result', self.ctx.total)
-```
+<<< @/scripts/s03_debug_workchain.py#example python
 
 ::right::
 
 - `flag=True`: result is `value + 1`.
 - `flag=False`: `finish` raises at runtime for `ctx`:
 
-<br> 
+<br>
 
-```text
-AttributeError: 'AttributeDict' object has no attribute 'total'
-```
+<<< @/scripts/expected_missing_context.txt text
 
 
 ---
@@ -184,50 +94,19 @@ layoutClass: dense
 
 ::left::
 
-```python
-from aiida.engine import graph, task
+<<< @/scripts/s04_debug_graph.py#example python
 
+<<< @/scripts/s04_debug_graph.py#build python
 
-@task
-def add(x: int, y: int) -> int:
-    return x + y
-
-
-@graph
-def broken(value: int, flag: bool) -> int:
-    if flag:
-        total = add(x=value, y=1)
-    return total
-
-
-broken.build()
-```
-
-```text
-GraphLanguageError: broken.py:11:5: __main__:broken:
-  without an `else` arm the branch keeps the prior
-  binding, so `total` must be assigned before the `if`;
-  assign it first or add an `else` arm instead
-    if flag:
-    ^
-```
+<<< @/scripts/expected_build_error.txt text
 
 ::right::
 
 **Fix: bind `total` before the `if`, or add an `else` arm**
 
-```python
-total = value
-if flag:
-    total = add(x=value, y=1)
-```
+<<< @/scripts/s05_fix_prior_binding.py#example python
 
-```python
-if flag:
-    total = add(x=value, y=1)
-else:
-    total = add(x=value, y=2)
-```
+<<< @/scripts/s06_fix_else_binding.py#example python
 
 - Missing binding: source line, column, suggested fixes.
 - `build()`: no profile or inputs.
@@ -252,45 +131,24 @@ layout: section
 <div class="concept-heading">WorkChain<small></small></div>
 <div></div>
 <div class="concept-heading">Graph
-  <pre class="concept-code"><code>add_calc = task(ArithmeticAddCalculation)</code></pre>
+  <ConceptCode file="concept_01.py" region="example" highlights="[]" />
 </div>
 
-<pre class="concept-code"><code><span class="concept-function">@calcfunction</span>
-def multiply(x, y):
-    return x * y</code></pre>
+<ConceptCode file="concept_02.py" region="example" highlights="[[&quot;@calcfunction&quot;, &quot;concept-function&quot;]]" />
 <div class="concept-arrow concept-function"><strong>Calculation</strong><span>⟶</span></div>
-<pre class="concept-code"><code><span class="concept-function">@task</span>
-def multiply(<span class="concept-ports">x: int, y: int</span>) -&gt; <span class="concept-ports">int</span>:
-    return x * y</code></pre>
+<ConceptCode file="concept_03.py" region="example" highlights="[[&quot;@task&quot;, &quot;concept-function&quot;], [&quot;x: int, y: int&quot;, &quot;concept-ports&quot;], [&quot;int&quot;, &quot;concept-ports&quot;]]" />
 
-<pre class="concept-code"><code>        <span class="concept-ports">spec.input('x', valid_type=Int)</span>
-        <span class="concept-ports">spec.input('y', valid_type=Int)</span>
-        <span class="concept-ports">spec.input('z', valid_type=Int)</span>
-        <span class="concept-ports">spec.output('result', valid_type=Int)</span></code></pre>
+<ConceptCode file="concept_04.py" region="example" highlights="[[&quot;spec.input(&#x27;x&#x27;, valid_type=Int)&quot;, &quot;concept-ports&quot;], [&quot;spec.input(&#x27;y&#x27;, valid_type=Int)&quot;, &quot;concept-ports&quot;], [&quot;spec.input(&#x27;z&#x27;, valid_type=Int)&quot;, &quot;concept-ports&quot;], [&quot;spec.output(&#x27;result&#x27;, valid_type=Int)&quot;, &quot;concept-ports&quot;]]" />
 <div class="concept-arrow concept-ports"><strong>Ports &amp; types</strong><span>⟶</span></div>
-<pre class="concept-code"><code>@graph
-def multiply_add(
-    <span class="concept-ports">x: int, y: int, z: int</span>
-) -&gt; <span class="concept-ports">int</span>:</code></pre>
+<ConceptCode file="concept_05.py" region="example" highlights="[[&quot;x: int, y: int, z: int&quot;, &quot;concept-ports&quot;], [&quot;int&quot;, &quot;concept-ports&quot;]]" />
 
-<pre class="concept-code"><code>        <span class="concept-task">spec.outline(cls.multiply, cls.add, cls.result)</span>
-
-    def multiply(self):
-        <span class="concept-state">self.ctx.product</span> = <span class="concept-function">multiply(</span>
-            <span class="concept-function">self.inputs.x, self.inputs.y)</span>
-    def add(self):
-        future = <span class="concept-task">self.submit(ArithmeticAddCalculation,</span>
-            <span class="concept-task">x=self.ctx.product, y=self.inputs.z)</span>
-        return ToContext(<span class="concept-state">addition</span>=future)</code></pre>
+<ConceptCode file="concept_06.py" region="example" highlights="[[&quot;spec.outline(cls.multiply, cls.add, cls.result)&quot;, &quot;concept-task&quot;], [&quot;self.ctx.product&quot;, &quot;concept-state&quot;], [&quot;multiply(&quot;, &quot;concept-function&quot;], [&quot;self.inputs.x, self.inputs.y)&quot;, &quot;concept-function&quot;], [&quot;self.submit(ArithmeticAddCalculation,&quot;, &quot;concept-task&quot;], [&quot;x=self.ctx.product, y=self.inputs.z)&quot;, &quot;concept-task&quot;], [&quot;addition&quot;, &quot;concept-state&quot;]]" />
 <div class="concept-arrow concept-task"><strong>Steps &amp; submit</strong><span>⟶</span><strong class="concept-state">Context → values</strong></div>
-<pre class="concept-code"><code>    <span class="concept-state">product</span> = <span class="concept-function">multiply(x=x, y=y)</span>
-    <span class="concept-state">addition</span> = <span class="concept-task">add_calc(x=product, y=z)</span></code></pre>
+<ConceptCode file="concept_07.py" region="example" highlights="[[&quot;product&quot;, &quot;concept-state&quot;], [&quot;multiply(x=x, y=y)&quot;, &quot;concept-function&quot;], [&quot;addition&quot;, &quot;concept-state&quot;], [&quot;add_calc(x=product, y=z)&quot;, &quot;concept-task&quot;]]" />
 
-<pre class="concept-code"><code>    def result(self):
-        <span class="concept-return">self.out('result',</span>
-                 self.ctx.<span class="concept-state">addition</span>.outputs.sum<span class="concept-return">)</span></code></pre>
+<ConceptCode file="concept_08.py" region="example" highlights="[[&quot;self.out(&#x27;result&#x27;,&quot;, &quot;concept-return&quot;], [&quot;addition&quot;, &quot;concept-state&quot;], [&quot;)&quot;, &quot;concept-return&quot;]]" />
 <div class="concept-arrow concept-return"><strong>Outputs</strong><span>⟶</span></div>
-<pre class="concept-code"><code>    <span class="concept-return">return</span> <span class="concept-state">addition</span>.sum</code></pre>
+<ConceptCode file="concept_09.py" region="example" highlights="[[&quot;return&quot;, &quot;concept-return&quot;], [&quot;addition&quot;, &quot;concept-state&quot;]]" />
 </div>
 
 
@@ -304,13 +162,7 @@ def multiply_add(
 <div class="arithmetic-highlight execution-python">
 <h3><img src="/logos/python.svg" alt="Python logo" /> Task · Python interpreter</h3>
 
-```python
-@task
-def multiply_add_task(x: int, y: int, z: int) -> int:
-    product = x * y
-    total = product + z
-    return total
-```
+<<< @/scripts/s07_task_interpreter.py#example python
 
 </div>
 
@@ -325,13 +177,7 @@ def multiply_add_task(x: int, y: int, z: int) -> int:
 <div class="arithmetic-highlight execution-aiida">
 <h3><img src="/logos/aiida/logo_AiiDA.png" alt="AiiDA logo" /> Inline graph · AiiDA graph process</h3>
 
-```python
-@graph
-def multiply_add_inline(x: int, y: int, z: int) -> int:
-    product = x * y
-    total = product + z
-    return total
-```
+<<< @/scripts/s08_inline_interpreter.py#example python
 
 </div>
 
@@ -380,14 +226,7 @@ newly computed scalar data; a root must return stored data from a task or its in
 <div class="execution-panel execution-python">
 <div>
 
-```python
-@task
-def summarize(values: list[float]) -> float:
-    import numpy as np
-    array = np.asarray(values)
-    filtered = array[np.isfinite(array)]
-    return float(np.mean(filtered))
-```
+<<< @/scripts/s09_numpy_task.py#example python
 
 </div>
 <div class="execution-logo">
@@ -399,12 +238,7 @@ def summarize(values: list[float]) -> float:
 <div class="execution-panel execution-aiida">
 <div>
 
-```python
-@graph
-def analyze(values: list[float]) -> float:
-    mean = summarize(values=values)
-    return mean
-```
+<<< @/scripts/s10_numpy_graph.py#example python
 
 </div>
 <div class="execution-logo">
@@ -462,13 +296,7 @@ Python logo: Devicon python-original.svg, https://github.com/devicons/devicon
 
 ### Task calls
 
-```python
-@graph
-def calculate(x: int, y: int, z: int) -> int:
-    product = multiply(x=x, y=y)  # checkpoint
-    total = add(x=product, y=z)  # checkpoint
-    return total
-```
+<<< @/scripts/s11_task_checkpoints.py#example python
 
 - **Checkpoint:** while waiting for each task.
 - **Provenance:** one `CalcFunctionNode` per call; `product` is a stored node.
@@ -478,13 +306,7 @@ def calculate(x: int, y: int, z: int) -> int:
 
 ### Inline operations
 
-```python
-@graph
-def calculate(x: int, y: int, z: int) -> int:
-    product = x * y
-    total = product + z
-    return record(value=total)  # checkpoint
-```
+<<< @/scripts/s12_inline_checkpoints.py#example python
 
 - **Checkpoint:** while waiting for `record`; holds `product` and `total`.
 - **Provenance:** only `record`; the arithmetic leaves no nodes.
@@ -519,231 +341,14 @@ layout: section
 
 ---
 layout: two-cols-header
----
-
-# Branching
-
-::left::
-
-**Task: ordinary Python**
-
-```python
-from aiida.engine import graph, task
-
-
-@task
-def add(x: int, y: int) -> int:
-    return x + y
-```
-
-- Graph tests `flag`; only the selected task runs.
-- Task: `CalcFunctionNode`, with a stored result.
-- Local: one interpreter. Daemon: workers may differ.
-
-::right::
-
-**Graph: orchestration**
-
-```python
-@graph
-def choose(x: int, flag: bool) -> int:
-    if flag:
-        chosen = add(x=x, y=1)
-    else:
-        chosen = add(x=x, y=2)
-    return chosen
-```
-
----
-layout: two-cols-header
----
-
-# Read and query the branch output
-
-::left::
-
-**Read the public workflow output**
-
-```python
-from aiida.engine import run_get_node
-from aiida.orm import load_node
-
-outputs, root = run_get_node(
-    choose, x=10, flag=True,
-)
-assert outputs['result'].value == 11
-
-# Later, in another session:
-saved = load_node(root.pk)
-result = saved.outputs.result
-assert result.value == 11
-```
-
-The graph exposes the selected result. No need to inspect branch names or child tasks.
-
-::right::
-
-**Query the stored RETURN link**
-
-```python
-from aiida.orm import GraphNode, Int, QueryBuilder
-
-query = QueryBuilder()
-query.append(
-    GraphNode,
-    filters={'id': root.pk},
-    tag='workflow',
-)
-query.append(
-    Int,
-    with_incoming='workflow',
-    edge_filters={
-        'type': 'return',
-        'label': 'result',
-    },
-    project='*',
-)
-result, = query.one()
-assert result.value == 11
-```
-
-The query follows **workflow → RETURN → result**, regardless of which branch ran.
-
----
-layout: two-cols-header
 layoutClass: dense
 ---
 
-# Declared failures
+# Map and reduce
 
 ::left::
 
-```python
-from aiida.engine import Err, ExitCode, ExitCodeEnum, Ok, Result
-from aiida.engine import graph, task
-
-
-class DivisionErrors(ExitCodeEnum):
-    ZERO_DENOMINATOR = ExitCode(410, 'The denominator is zero.')
-
-
-@task
-def divide(
-    numerator: float, denominator: float
-) -> Result[float, DivisionErrors]:
-    if denominator == 0:
-        return Err(DivisionErrors.ZERO_DENOMINATOR)
-    return Ok(numerator / denominator)
-
-
-@task
-def recover_zero(error: DivisionErrors) -> float:
-    return 0.0
-```
-
-::right::
-
-```python
-@graph
-def ratio_or_zero(numerator: float, denominator: float) -> float:
-    value, error = divide(
-        numerator=numerator, denominator=denominator
-    )
-    if error is None:
-        selected = value
-    else:
-        selected = recover_zero(error=error)
-    return selected
-```
-
-- `(value, error)`: exactly one is present.
-- Declared error: nonzero task status, available to the graph.
-- Other failures: graph exits with `ERROR_TASK_FAILED`.
-
----
-layout: two-cols-header
-layoutClass: dense
----
-
-# Retrying a declared failure
-
-::left::
-
-```python
-from aiida.engine import Err, ExitCode, ExitCodeEnum, Ok, Result
-from aiida.engine import graph, task
-
-
-class StepErrors(ExitCodeEnum):
-    UNSTABLE = ExitCode(410, 'Unstable step.')
-
-
-@task
-def run_step(x: int, attempt: int) -> Result[int, StepErrors]:
-    if attempt < 1:
-        return Err(StepErrors.UNSTABLE)
-    return Ok(x + 1)
-
-
-@task
-def ensure(value: int | None) -> None:
-    if value is None:
-        raise ValueError('the step never succeeded.')
-```
-
-::right::
-
-```python
-@graph
-def restartable(x: int, max_retries: int, attempt: int = 0) -> int:
-    value, error = run_step(x=x, attempt=attempt)
-    while error is StepErrors.UNSTABLE and attempt < max_retries:
-        attempt = attempt + 1
-        value, error = run_step(x=x, attempt=attempt)
-    checked = ensure(value=value)
-    return value
-```
-
-- `UNSTABLE`: retry within budget.
-- `max_retries`: repeats after the initial call.
-- Loop iterations run sequentially.
-- Counter: inline. All attempts failed: `ensure` fails the graph.
-
----
-layout: two-cols-header
-layoutClass: dense
----
-
-# Parallel map and reduction
-
-::left::
-
-```python
-from aiida.engine import graph, par_map, task
-from aiida.orm import DataList, StructureData
-
-
-@task
-def expand_cell(structure: StructureData) -> StructureData:
-    scaled = structure.clone()
-    scaled.set_cell(
-        [
-            [1.05 * component for component in vector]
-            for vector in structure.cell
-        ]
-    )
-    return scaled
-
-
-@task
-def mean_cell_volume(structures: DataList) -> float:
-    if not structures:
-        raise ValueError('empty structure list')
-    total = 0.0
-    for structure in structures:
-        total += structure.get_cell_volume()
-    return total / len(structures)
-```
+<<< @/scripts/s13_map_tasks.py#example python
 
 ::right::
 
@@ -751,39 +356,11 @@ def mean_cell_volume(structures: DataList) -> float:
 <span class="box">DataList</span>→<span class="stack"><span class="box">expand_cell</span><span class="box">expand_cell</span><span class="box">expand_cell</span></span>→<span class="box">DataList</span>→<span class="box">mean_cell_volume</span>
 </div>
 
-```python
-@graph
-def mean_expanded_volume(structures: DataList) -> float:
-    expanded = par_map(expand_cell, structures)
-    return mean_cell_volume(structures=expanded)
-```
+<<< @/scripts/s14_map_reduce.py#example python
 
 - `par_map`: one call per item, all submitted before waiting.
 - Collector stores results in input order.
 - `for` loops: task bodies only.
-
----
-
-# Inline collections
-
-```python
-from aiida.engine import graph, task
-
-
-@task
-def sum_values(values: list[int]) -> int:
-    return sum(values)
-
-
-@graph
-def scaled_filtered(values: list[int], scale: int) -> int:
-    scaled = [item * scale for item in values if item > 0]
-    return sum_values(values=scaled)
-```
-
-- `list[T]` and `dict[str, T]` declare element types.
-- Inline expressions run in the graph process; values are checkpointed.
-- `sum_values` stores the scientific result.
 
 ---
 layout: two-cols-header
@@ -794,33 +371,14 @@ layoutClass: dense
 
 ::left::
 
-```python
-from aiida.engine import graph, task
-
-
-@task
-def add(x: int, y: int) -> int:
-    return x + y
-```
+<<< @/scripts/s15_placement_task.py#example python
 
 - Placement: one call site; repeated calls need unique aliases.
-- `partial`: shared input bindings; no import.
+- `partial`: shared input bindings; currently unsupported in this checkout.
 
 ::right::
 
-```python
-@graph
-def two_steps(x: int, y: int) -> int:
-    first = add.alias('scf')(x=x, y=y)
-    return add.alias('nscf')(x=first, y=y)
-
-
-@graph
-def add_shifted(x: int, y: int) -> int:
-    add_y = partial(add, y=y)
-    first = add_y.alias('first')(x=x)
-    return add_y.alias('second')(x=first)
-```
+<<< @/scripts/s16_placements.py#example python
 
 ---
 layout: two-cols-header
@@ -831,94 +389,17 @@ layoutClass: dense
 
 ::left::
 
-```python
-from typing import Annotated
-
-from aiida.engine import PortField, PortModel
-from aiida.engine import graph, run_get_node, task
-
-
-class Scaling(PortModel):
-    factor: Annotated[
-        float, PortField(help='Cell scale factor.')
-    ] = 1.05
-
-
-class Settings(PortModel):
-    scaling: Scaling
-    label: str = 'demo'
-
-
-@task
-def scaled_volume(volume: float, settings: Settings) -> float:
-    return volume * settings.scaling.factor**3
-```
+<<< @/scripts/s17_port_model.py#example python
 
 ::right::
 
-```python
-@graph
-def configured(volume: float, settings: Settings) -> float:
-    return scaled_volume(volume=volume, settings=settings)
+<<< @/scripts/s18_configured.py#example python
 
-
-run_get_node(configured, volume=10.0, settings={'scaling': {}})
-```
+<<< @/scripts/s18_configured.py#launch python
 
 - Fields become input nodes: `Float(1.05)`, `Str('demo')`.
 - Empty `scaling` uses defaults; result: `11.57625`.
-
----
-layout: two-cols-header
-layoutClass: dense
----
-
-# Pydantic models as port namespaces
-
-::left::
-
-```python
-from aiida.engine import graph, run_get_node, task
-from pydantic import BaseModel, Field
-
-
-class PydanticScaling(BaseModel):
-    factor: float = Field(
-        default=1.05, description='Cell scale factor.'
-    )
-
-
-class PydanticSettings(BaseModel):
-    scaling: PydanticScaling
-    label: str = 'demo'
-
-
-@task
-def scaled_volume(
-    volume: float, settings: PydanticSettings
-) -> float:
-    return volume * settings.scaling.factor**3
-```
-
-::right::
-
-```python
-@graph
-def configured_pydantic(
-    volume: float, settings: PydanticSettings
-) -> float:
-    return scaled_volume(volume=volume, settings=settings)
-
-
-run_get_node(
-    configured_pydantic, volume=10.0, settings={'scaling': {}}
-)
-```
-
-- Nested ports, defaults, help text.
-- Fields: `str`, `int`, `float`, `bool`, optionally `None`.
-- Task inputs: attribute-accessible mappings, without model methods.
-- Validators and aliases rejected; value checks belong in tasks.
+- Pydantic `BaseModel` also declares nested ports, defaults, and help text; validators and aliases are not supported.
 
 ---
 layout: two-cols-header
@@ -929,54 +410,73 @@ layoutClass: dense
 
 ::left::
 
-```python
-from aiida.calculations.arithmetic.add import (
-    ArithmeticAddCalculation,
-)
-from aiida.engine import graph, task
-from aiida.workflows.arithmetic.multiply_add import (
-    MultiplyAddWorkChain,
-)
-
-multiply_add = task(MultiplyAddWorkChain)
-add_calc = task(ArithmeticAddCalculation)
-
-
-@graph
-def integrated(x: int, y: int, z: int) -> int | float:
-    prepared = multiply_add(x=x, y=y, z=z)
-    total = add_calc(x=prepared.result, y=z)
-    return total.sum
-```
+<<< @/scripts/s19_existing_processes.py#example python
 
 ::right::
 
-```python
-from aiida.engine import run_get_node
-from aiida.orm import load_code
-
-code = load_code('add@localhost')
-options = {
-    'resources': {'num_machines': 1, 'num_mpiprocs_per_machine': 1}
-}
-outputs, node = run_get_node(
-    integrated,
-    inputs={'x': 2, 'y': 3, 'z': 4},
-    runtime_config={
-        'multiply_add': {'code': code},
-        'add_calc': {
-            'code': code,
-            'metadata': {'options': options},
-        },
-    },
-)
-```
+<<< @/scripts/s20_runtime_config.py#example python
 
 ::bottom::
 
 - `task(...)`: existing CalcJobs and WorkChains, unchanged.
 - Graph returns the CalcJob's existing `sum` node.
 - `runtime_config`: `code`, `metadata`.
+
+---
+layout: two-cols-header
+layoutClass: dense
+---
+
+# Declared failures
+
+::left::
+
+<<< @/scripts/s21_division_task.py#example python
+
+::right::
+
+<<< @/scripts/s22_declared_failure.py#example python
+
+- `(value, error)`: exactly one is present.
+- Declared error: nonzero task status, available to the graph.
+- Other failures: graph exits with `ERROR_TASK_FAILED`.
+
+---
+layout: two-cols-header
+layoutClass: dense
+---
+
+# Iterating on a declared failure
+
+::left::
+
+**Reuse `divide` from the previous slide.** Instead of a fallback, change the input and try again.
+
+<<< @/scripts/s23_require_value.py#example python
+
+**Example: `numerator=12.0`, `denominator=0.0`**
+
+1. Initial call → `ZERO_DENOMINATOR`.
+2. Loop: increase denominator to `1.0`; retry.
+3. Retry → `(12.0, None)`; leave the loop.
+4. `require_value` records and returns `12.0`.
+
+::right::
+
+<<< @/scripts/s24_retry_loop.py#example python
+
+- Each iteration uses the **latest** `(value, error)`.
+- Success clears `error`; attempts run sequentially.
+- `max_retries` counts calls **after** the initial attempt.
+- No success within budget → `require_value` fails the graph.
+
+<!--
+This deliberately simple recovery rule illustrates loop-carried inputs and Result
+unpacking, not a numerical recommendation for handling division by zero.
+With max_retries=0 and denominator=0.0 the loop is skipped and require_value raises.
+For a solver, the same pattern can adjust mixing, a time step, or another parameter
+before retrying a declared non-convergence error.
+-->
 
 ---
 layout: section
@@ -997,18 +497,7 @@ class: branch-binding
 
 ### WorkGraph: no runtime selection
 
-```python
-with If(first_sum < 0):
-    result = add(
-        x=first_sum, y=2).result
-
-with If(first_sum >= 0):
-    result = multiply(
-        x=first_sum, y=3).result
-
-final_sum = add(
-    x=result, y=1).result
-```
+<<< @/scripts/s25_workgraph_binding.py#example python
 
 <img class="workgraph-dependency" src="/assets/workgraph-overwritten-binding.svg" alt="Only the multiplication output is wired to the final addition; the conditional addition has no connection to it." />
 
@@ -1019,19 +508,7 @@ Both `with` bodies execute **while building**. Python overwrites `result` with t
 
 ### WorkGraph: context + ordering
 
-```python
-with If(first_sum < 0):
-    second_sum = add(x=first_sum, y=2).result
-    wg.ctx.result = second_sum
-
-with If(first_sum >= 0):
-    product = multiply(x=first_sum, y=3).result
-    wg.ctx.result = product
-
-final_sum = add(x=wg.ctx.result, y=1).result
-final_sum << second_sum
-final_sum << product
-```
+<<< @/scripts/s26_workgraph_context.py#example python
 
 <img class="workgraph-dependency" src="/assets/workgraph-context-ordering.svg" alt="Both conditional tasks write ctx.result; solid edges carry values and dashed wait edges order the final addition after both branches resolve." />
 
@@ -1042,18 +519,7 @@ The taken task populates context at runtime. Explicit waits prevent an early rea
 
 ### Graph language: selected output
 
-```python
-# Inside an @graph function:
-if first_sum < 0:
-    result = add(
-        x=first_sum, y=2)
-else:
-    result = multiply(
-        x=first_sum, y=3)
-
-final_sum = add(
-    x=result, y=1)
-```
+<<< @/scripts/s27_graph_binding.py#example python
 
 The compiler creates a **branch placement with one output**. The runtime runs only the selected arm. `final_sum` depends on the branch output—not on shared context.
 
@@ -1116,18 +582,7 @@ ordering still requires after=.
 
 ### Explicit · choose checkpoint locations
 
-```python
-@graph
-def arithmetic_inline(x: int, y: int, z: int) -> int:
-    total = x + y
-    checkpoint()
-
-    product = total * z
-    checkpoint()
-
-    return record(value=product)
-    # ← Checkpoint at task wait / resume
-```
+<<< @/scripts/s28_explicit_checkpoint_proposal.py#example python
 
 **`checkpoint()`** persists progress at explicitly chosen graph boundaries.
 
@@ -1136,18 +591,7 @@ def arithmetic_inline(x: int, y: int, z: int) -> int:
 
 ### Automatic · checkpoint every statement
 
-```python
-@graph
-def arithmetic_inline(x: int, y: int, z: int) -> int:
-    total = x + y
-    # ← Checkpoint: total saved
-
-    product = total * z
-    # ← Checkpoint: product saved
-
-    return record(value=product)
-    # ← Checkpoint at task wait / resume
-```
+<<< @/scripts/s29_automatic_checkpoint_proposal.py#example python
 
 **`runtime_config={"graph_inline_persistence": True}`** persists each completed graph statement automatically.
 
@@ -1189,35 +633,35 @@ Wait/resume boundaries are drawn schematically around the return task call.
 Task bodies remain arbitrary Python and do not acquire instruction-level recovery.
 A crash before a checkpoint completes may replay work since the preceding saved state.
 Checkpointing alone does not provide exactly-once guarantees for external side effects.
-scripts/12_arithmetic_boundaries.py validates the existing IR, outputs, and provenance;
+backup_scripts/12_arithmetic_boundaries.py validates the existing IR, outputs, and provenance;
 it does NOT verify the proposed per-statement persistence guarantee.
 -->
 
 ---
 
-# Design through workflow evaluation
+# Evaluation process
 
-### Loop 1 · We port real plugins
-
-<div class="workflow-eval-loop">
-<div><strong>1 · Rewrite</strong><span>QE + Koopmans workflows<br/>in the graph language</span></div>
-<b>→</b>
-<div><strong>2 · Identify problems</strong><span>What is missing or awkward<br/>in the rewrite?</span></div>
-<b>→</b>
-<div><strong>3 · Solve</strong><span>Choose a design change<br/>and update the rewrite</span></div>
-</div>
-<div class="workflow-eval-return">↶ Revisit the workflows with the revised design</div>
-
-### Loop 2 · WorkGraph users try the language
+### Loop 1 Porting existing plugins
 
 <div class="workflow-eval-loop">
-<div><strong>1 · Explore</strong><span>Give the language to WorkGraph<br/>users and let them play</span></div>
+<div><strong>Rewrite</strong><span>qe + koopmans plugins<br/>to the graph language</span></div>
 <b>→</b>
-<div><strong>2 · Collect feedback</strong><span>Where do they get stuck?<br/>What feels unnatural?</span></div>
+<div><strong>Identify problems</strong><span>What is missing or awkward<br/>in the rewrite?</span></div>
 <b>→</b>
-<div><strong>3 · Iterate</strong><span>Revise the language<br/>and give it back to users</span></div>
+<div><strong>Revise</strong><span>Revise the language<br/></span></div>
 </div>
-<div class="workflow-eval-return">↶ Another round of hands-on use and feedback</div>
+<div class="workflow-eval-return"></div>
+
+### Loop 2 WorkGraph users try the language
+
+<div class="workflow-eval-loop">
+<div><strong>Explore</strong><span>Give the language to people that<br/> used WorkGrap and let them play</span></div>
+<b>→</b>
+<div><strong>Collect feedback</strong><span>Where do they get stuck?<br/>What feels unnatural?</span></div>
+<b>→</b>
+<div><strong>Revise</strong><span>Revise the language<br/></span></div>
+</div>
+<div class="workflow-eval-return"></div>
 
 <style>
 .workflow-eval-loop { display: flex; gap: 12px; align-items: center; margin: 0.7rem 0 0.4rem; }
@@ -1241,7 +685,7 @@ plugin rewrite with its authors.
 layout: section
 ---
 
-# Appendix
+# Backup slides
 
 ---
 
@@ -1252,17 +696,11 @@ layout: section
 
 ### Computation inside one task
 
-```python
-@task
-def choose_task(x: int, y: int) -> int:
-    if x < 0:
-        result = x + y
-    else:
-        result = x * y
-    return result
-```
+<!--
+<<< @/scripts/s30_branch_task.py#example python
+-->
 
-<img src="/assets/10-task-add-slides.svg" alt="Stored provenance: x and y are inputs of choose_task, which creates result 1." />
+<img src="/assets/provenance/s30_input_-2-slides.svg" alt="Stored provenance: x and y are inputs of choose_task, which creates result 1." />
 
 One calculation **creates** the result. Its internal Python operations are not separate nodes.
 
@@ -1271,24 +709,18 @@ One calculation **creates** the result. Its internal Python operations are not s
 
 ### Graph calling arithmetic tasks
 
-```python
-@graph
-def choose_graph(x: int, y: int) -> int:
-    if x < 0:
-        result = add(x=x, y=y)
-    else:
-        result = multiply(x=x, y=y)
-    return result
-```
+<!--
+<<< @/scripts/s31_branch_graph.py#example python
+-->
 
-<img src="/assets/10-graph-add-slides.svg" alt="Stored provenance: choose_graph calls add, which creates result 1; choose_graph returns that same data node." />
+<img src="/assets/provenance/s31_input_-2-slides.svg" alt="Stored provenance: choose_graph calls add, which creates result 1; choose_graph returns that same data node." />
 
 The selected task **creates** the result; the root workflow **returns** it. No node for the `if` or untaken task.
 
 </div>
 </div>
 
-Actual runs: **x = −2, y = 3 → result = 1** · `scripts/10_interpreters.py`
+Actual runs: **x = −2, y = 3 → result = 1** · `scripts/run_all.py --snippet 30 31`
 
 <!--
 This restores the earlier provenance comparison, with verified AiiDA-generated SVGs.
@@ -1310,15 +742,7 @@ RETURN, and input links. Diagram styling preserves all actual nodes and links.
 
 ### Task · Python interpreter
 
-```python
-@task
-def choose_task(x: int, y: int) -> int:
-    if x < 0:
-        result = x + y
-    else:
-        result = x * y
-    return result
-```
+<<< @/scripts/s32_branch_task_ir.py#example python
 
 <img src="/assets/11-task-ir.svg" alt="GraphIR sees one opaque choose_task placement between inputs and output; its Python if and arithmetic are not represented." />
 
@@ -1329,15 +753,7 @@ def choose_task(x: int, y: int) -> int:
 
 ### Graph · AiiDA graph process
 
-```python
-@graph
-def choose_graph(x: int, y: int) -> int:
-    if x < 0:
-        result = x + y
-    else:
-        result = x * y
-    return record(value=result)
-```
+<<< @/scripts/s33_branch_inline_ir.py#example python
 
 <img src="/assets/11-graph-ir.svg" alt="GraphIR contains an inline comparison, BranchControl, inline addition and multiplication arms, and a record task consuming the selected result." />
 
@@ -1351,7 +767,7 @@ Compact views of compiled **GraphIR**, not provenance. `GraphRun` inside `GraphP
 
 
 <!--
-scripts/11_interpreter_ir.py compiles and validates the actual definitions without
+backup_scripts/11_interpreter_ir.py compiles and validates the actual definitions without
 running any processes. It saves complete JSON and Mermaid IR alongside compact SVG
 views. Region port wiring is collapsed; the selected-result node represents the
 branch output, not an additional executable placement.
@@ -1375,15 +791,9 @@ Provenance would record the root and record task, but not the inline if or arith
 
 ### One Python task
 
-```python
-@task
-def arithmetic_task(x: int, y: int, z: int) -> int:
-    total = x + y
-    product = total * z
-    return product
-```
+<<< @/scripts/s34_arithmetic_task.py#example python
 
-<img src="/assets/12-task-slides.svg" alt="Actual provenance: x, y, z are inputs of arithmetic_task, which creates result 20." />
+<img src="/assets/provenance/s34_arithmetic_task-slides.svg" alt="Actual provenance: x, y, z are inputs of arithmetic_task, which creates result 20." />
 
 The task consumes **x, y, z** and creates **20**. The intermediate **5** is not a data node.
 
@@ -1392,15 +802,9 @@ The task consumes **x, y, z** and creates **20**. The intermediate **5** is not 
 
 ### One inline graph + output task
 
-```python
-@graph
-def arithmetic_inline(x: int, y: int, z: int) -> int:
-    total = x + y
-    product = total * z
-    return record(value=product)
-```
+<<< @/scripts/s35_arithmetic_inline.py#example python
 
-<img src="/assets/12-inline-slides.svg" alt="Actual provenance: arithmetic_inline consumes x, y, z and calls record with the computed value; record creates the result that the graph returns." />
+<img src="/assets/provenance/s35_arithmetic_inline-slides.svg" alt="Actual provenance: arithmetic_inline consumes x, y, z and calls record with the computed value; record creates the result that the graph returns." />
 
 The graph calls `record` and returns its output. Inline **+** and **×** are in GraphIR, not provenance.
 
@@ -1416,12 +820,6 @@ its own output Data node. That input has no calculation creator for the inline a
 Do not mistake that materialization for provenance of add or multiply.
 The script asserts output values, child counts, result creators, and workflow returns.
 -->
-
----
-layout: section
----
-
-# Backup slides
 
 ---
 

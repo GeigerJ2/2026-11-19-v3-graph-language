@@ -1,0 +1,18 @@
+digraph {
+	graph [rankdir=LR]
+	N218 [label="choose_task (218)
+State: finished
+Exit Code: 0" color=red fillcolor="#de707f77" penwidth=6 shape=rectangle style=filled]
+	N216 [label="Int (216)
+value: -2" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N217 [label="Int (217)
+value: 3" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N219 [label="Int (219)
+value: 1" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N218 -> N219 [label="CREATE
+result" color="#000000" style=solid]
+	N216 -> N218 [label="INPUT_CALC
+x" color="#000000" style=solid]
+	N217 -> N218 [label="INPUT_CALC
+y" color="#000000" style=solid]
+}

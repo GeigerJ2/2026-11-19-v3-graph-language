@@ -1,0 +1,549 @@
+{
+  "completed": true,
+  "configuration": "/var/folders/lh/d5j2y3816xg0qffzv9bqlx2c0000gn/T/aiida-slide-snippets-wigy3mfp/.aiida",
+  "selected_snippets": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35
+  ],
+  "runs": [
+    {
+      "snippet": 1,
+      "case": "multiply_add_workchain",
+      "root_pk": 5,
+      "root_uuid": "2d8d6ca9-eea2-411f-aa4a-3592a11b9135",
+      "state": "ProcessState.FINISHED",
+      "exit_status": 0,
+      "result": 10,
+      "dot": "scripts/generated/s01_multiply_add_workchain.dot",
+      "svg": "public/assets/provenance/s01_multiply_add_workchain-slides.svg"
+    },
+    {
+      "snippet": 2,
+      "case": "multiply_add_graph",
+      "root_pk": 15,
+      "root_uuid": "8832e14f-aafa-4794-bb0a-dcc0d104ef53",
+      "state": "ProcessState.FINISHED",
+      "exit_status": 0,
+      "result": 10,
+      "dot": "scripts/generated/s02_multiply_add_graph.dot",
+      "svg": "public/assets/provenance/s02_multiply_add_graph-slides.svg"
+    },
+    {
+      "snippet": 3,
+      "case": "with_context",
+      "root_pk": 25,
+      "root_uuid": "07c8bb97-0a80-49aa-bd75-702be254d260",
+      "state": "ProcessState.FINISHED",
+      "exit_status": 0,
+      "result": 5,
+      "dot": "scripts/generated/s03_with_context.dot",
+      "svg": "public/assets/provenance/s03_with_context-slides.svg"
+    },
+    {
+      "snippet": 3,
+      "case": "missing_context",
+      "root_pk": 30,
+      "root_uuid": "e63c4b3a-0e28-46e0-bb9d-80098ce59406",
+      "state": "ProcessState.EXCEPTED",
+      "exit_status": null,
+      "result": null,
+      "dot": "scripts/generated/s03_missing_context.dot",
+      "svg": "public/assets/provenance/s03_missing_context-slides.svg"
+    },
+    {
+      "snippet": 5,
+      "case": "flag_true",
+      "root_pk": 33,
+      "root_uuid": "7e998208-02c9-4274-8bce-68fb2e98d007",
+      "state": "ProcessState.FINISHED",
+      "exit_status": 0,
+      "result": 11,
+      "dot": "scripts/generated/s05_flag_true.dot",
+      "svg": "public/assets/provenance/s05_flag_true-slides.svg"
+    },
+    {
+      "snippet": 5,
+      "case": "flag_false",
+      "root_pk": 40,
+      "root_uuid": "182fc014-e6af-44ba-b998-29e1c444f74c",
+      "state": "ProcessState.FINISHED",
+      "exit_status": 0,
+      "result": 10,
+      "dot": "scripts/generated/s05_flag_false.dot",
+      "svg": "public/assets/provenance/s05_flag_false-slides.svg"
+    },
+    {
+      "snippet": 6,
+      "case": "flag_true",
+      "root_pk": 44,
+      "root_uuid": "a7dc6a14-bb77-4fc0-bce8-b312d5610dc7",
+      "state": "ProcessState.FINISHED",
+      "exit_status": 0,
+      "result": 11,
+      "dot": "scripts/generated/s06_flag_true.dot",
+      "svg": "public/assets/provenance/s06_flag_true-slides.svg"
+    },
+    {
+      "snippet": 6,
+      "case": "flag_false",
+      "root_pk": 51,
+      "root_uuid": "1ca63f79-b874-45dc-9742-cbb88c7ad9cc",
+      "state": "ProcessState.FINISHED",
+      "exit_status": 0,
+      "result": 12,
+      "dot": "scripts/generated/s06_flag_false.dot",
+      "svg": "public/assets/provenance/s06_flag_false-slides.svg"
+    },
+    {
+      "snippet": 7,
+      "case": "multiply_add_task",
+      "root_pk": 59,
+      "root_uuid": "633c5b69-556c-4639-bc9a-03f7807c42d2",
+      "state": "ProcessState.FINISHED",
+      "exit_status": 0,
+      "result": 10,
+      "dot": "scripts/generated/s07_multiply_add_task.dot",
+      "svg": "public/assets/provenance/s07_multiply_add_task-slides.svg"
+    },
+    {
+      "snippet": 8,
+      "case": "stored_inline",
+      "root_pk": 64,
+      "root_uuid": "d997be34-49f5-473e-ac7a-a38ebabb4b84",
+      "state": "ProcessState.FINISHED",
+      "exit_status": 0,
+      "result": 10,
+      "dot": "scripts/generated/s08_stored_inline.dot",
+      "svg": "public/assets/provenance/s08_stored_inline-slides.svg"
+    },
+    {
+      "snippet": 9,
+      "case": "finite_mean",
+      "root_pk": 70,
+      "root_uuid": "47c1ee00-633d-41e9-9b8d-264d144726a5",
+      "state": "ProcessState.FINISHED",
+      "exit_status": 0,
+      "result": 2.0,
+      "dot": "scripts/generated/s09_finite_mean.dot",
+      "svg": "public/assets/provenance/s09_finite_mean-slides.svg"
+    },
+    {
+      "snippet": 10,
+      "case": "finite_mean",
+      "root_pk": 73,
+      "root_uuid": "28991220-e912-44ec-822e-e641b17e0d80",
+      "state": "ProcessState.FINISHED",
+      "exit_status": 0,
+      "result": 2.0,
+      "dot": "scripts/generated/s10_finite_mean.dot",
+      "svg": "public/assets/provenance/s10_finite_mean-slides.svg"
+    },
+    {
+      "snippet": 11,
+      "case": "calculate",
+      "root_pk": 80,
+      "root_uuid": "783a11f2-5155-4925-ab65-fe07dfab208e",
+      "state": "ProcessState.FINISHED",
+      "exit_status": 0,
+      "result": 10,
+      "dot": "scripts/generated/s11_calculate.dot",
+      "svg": "public/assets/provenance/s11_calculate-slides.svg"
+    },
+    {
+      "snippet": 12,
+      "case": "calculate",
+      "root_pk": 89,
+      "root_uuid": "7d03d0f5-9497-4dea-b676-58fe0e6c472a",
+      "state": "ProcessState.FINISHED",
+      "exit_status": 0,
+      "result": 10,
+      "dot": "scripts/generated/s12_calculate.dot",
+      "svg": "public/assets/provenance/s12_calculate-slides.svg"
+    },
+    {
+      "snippet": 14,
+      "case": "mean_expanded_volume",
+      "root_pk": 98,
+      "root_uuid": "d0e4718f-226e-41e9-b798-c2e7b20b493e",
+      "state": "ProcessState.FINISHED",
+      "exit_status": 0,
+      "result": 38.201625,
+      "dot": "scripts/generated/s14_mean_expanded_volume.dot",
+      "svg": "public/assets/provenance/s14_mean_expanded_volume-slides.svg"
+    },
+    {
+      "snippet": 16,
+      "case": "two_steps",
+      "root_pk": 118,
+      "root_uuid": "0c38298d-3f51-4db8-ad00-29297c5ca7ff",
+      "state": "ProcessState.FINISHED",
+      "exit_status": 0,
+      "result": 8,
+      "dot": "scripts/generated/s16_two_steps.dot",
+      "svg": "public/assets/provenance/s16_two_steps-slides.svg"
+    },
+    {
+      "snippet": 18,
+      "case": "configured_defaults",
+      "root_pk": 127,
+      "root_uuid": "ed29d15e-5399-48e2-ae2e-29f94d9c6c7d",
+      "state": "ProcessState.FINISHED",
+      "exit_status": 0,
+      "result": 11.57625,
+      "dot": "scripts/generated/s18_configured_defaults.dot",
+      "svg": "public/assets/provenance/s18_configured_defaults-slides.svg"
+    },
+    {
+      "snippet": 20,
+      "case": "integrated",
+      "root_pk": 134,
+      "root_uuid": "ae1b54c8-302d-4dcb-af7f-a68d79e977a6",
+      "state": "ProcessState.FINISHED",
+      "exit_status": 0,
+      "result": 14,
+      "dot": "scripts/generated/s20_integrated.dot",
+      "svg": "public/assets/provenance/s20_integrated-slides.svg"
+    },
+    {
+      "snippet": 22,
+      "case": "denominator_0",
+      "root_pk": 149,
+      "root_uuid": "d72f467e-b4dc-4120-8f26-fc2e39dc4969",
+      "state": "ProcessState.FINISHED",
+      "exit_status": 0,
+      "result": 0.0,
+      "dot": "scripts/generated/s22_denominator_0.dot",
+      "svg": "public/assets/provenance/s22_denominator_0-slides.svg"
+    },
+    {
+      "snippet": 22,
+      "case": "denominator_3",
+      "root_pk": 157,
+      "root_uuid": "0dbb2dc1-f7ab-4df7-b4c3-e4615cfd301b",
+      "state": "ProcessState.FINISHED",
+      "exit_status": 0,
+      "result": 4.0,
+      "dot": "scripts/generated/s22_denominator_3.dot",
+      "svg": "public/assets/provenance/s22_denominator_3-slides.svg"
+    },
+    {
+      "snippet": 24,
+      "case": "denominator_0",
+      "root_pk": 164,
+      "root_uuid": "d1ded03f-134a-403e-9a3a-4c1e52d03630",
+      "state": "ProcessState.FINISHED",
+      "exit_status": 0,
+      "result": 12.0,
+      "dot": "scripts/generated/s24_denominator_0.dot",
+      "svg": "public/assets/provenance/s24_denominator_0-slides.svg"
+    },
+    {
+      "snippet": 24,
+      "case": "denominator_3",
+      "root_pk": 176,
+      "root_uuid": "24999686-0707-40ab-a5ca-63b926352a7f",
+      "state": "ProcessState.FINISHED",
+      "exit_status": 0,
+      "result": 4.0,
+      "dot": "scripts/generated/s24_denominator_3.dot",
+      "svg": "public/assets/provenance/s24_denominator_3-slides.svg"
+    },
+    {
+      "snippet": 24,
+      "case": "exhausted_budget",
+      "root_pk": 185,
+      "root_uuid": "2b6e2f6b-ce5c-4d81-88e1-234d0cb0e4d8",
+      "state": "ProcessState.FINISHED",
+      "exit_status": 400,
+      "result": null,
+      "dot": "scripts/generated/s24_exhausted_budget.dot",
+      "svg": "public/assets/provenance/s24_exhausted_budget-slides.svg"
+    },
+    {
+      "snippet": 27,
+      "case": "input_-2",
+      "root_pk": 191,
+      "root_uuid": "cea51fed-7af6-4553-b437-7bd63721a3a0",
+      "state": "ProcessState.FINISHED",
+      "exit_status": 0,
+      "result": 1,
+      "dot": "scripts/generated/s27_input_-2.dot",
+      "svg": "public/assets/provenance/s27_input_-2-slides.svg"
+    },
+    {
+      "snippet": 27,
+      "case": "input_2",
+      "root_pk": 200,
+      "root_uuid": "0e106b58-137a-4213-8b1d-efd75b292214",
+      "state": "ProcessState.FINISHED",
+      "exit_status": 0,
+      "result": 7,
+      "dot": "scripts/generated/s27_input_2.dot",
+      "svg": "public/assets/provenance/s27_input_2-slides.svg"
+    },
+    {
+      "snippet": 29,
+      "case": "arithmetic_inline",
+      "root_pk": 211,
+      "root_uuid": "0d103629-c93a-42dd-8bbb-14ce2a3b4f4c",
+      "state": "ProcessState.FINISHED",
+      "exit_status": 0,
+      "result": 20,
+      "dot": "scripts/generated/s29_arithmetic_inline.dot",
+      "svg": "public/assets/provenance/s29_arithmetic_inline-slides.svg"
+    },
+    {
+      "snippet": 30,
+      "case": "input_-2",
+      "root_pk": 218,
+      "root_uuid": "fcb9f2ec-afdc-4455-9c02-b258b8249924",
+      "state": "ProcessState.FINISHED",
+      "exit_status": 0,
+      "result": 1,
+      "dot": "scripts/generated/s30_input_-2.dot",
+      "svg": "public/assets/provenance/s30_input_-2-slides.svg"
+    },
+    {
+      "snippet": 30,
+      "case": "input_2",
+      "root_pk": 222,
+      "root_uuid": "3fcf309f-4958-41c5-b45b-9818110f72bf",
+      "state": "ProcessState.FINISHED",
+      "exit_status": 0,
+      "result": 6,
+      "dot": "scripts/generated/s30_input_2.dot",
+      "svg": "public/assets/provenance/s30_input_2-slides.svg"
+    },
+    {
+      "snippet": 31,
+      "case": "input_-2",
+      "root_pk": 226,
+      "root_uuid": "946eea8e-2ea5-496d-a7c3-b52bfc81fd41",
+      "state": "ProcessState.FINISHED",
+      "exit_status": 0,
+      "result": 1,
+      "dot": "scripts/generated/s31_input_-2.dot",
+      "svg": "public/assets/provenance/s31_input_-2-slides.svg"
+    },
+    {
+      "snippet": 31,
+      "case": "input_2",
+      "root_pk": 232,
+      "root_uuid": "0f798932-b392-49d9-9a00-59d32e74a0ac",
+      "state": "ProcessState.FINISHED",
+      "exit_status": 0,
+      "result": 6,
+      "dot": "scripts/generated/s31_input_2.dot",
+      "svg": "public/assets/provenance/s31_input_2-slides.svg"
+    },
+    {
+      "snippet": 32,
+      "case": "input_-2",
+      "root_pk": 238,
+      "root_uuid": "2928bf26-4c42-4315-a065-d64f2a3f9573",
+      "state": "ProcessState.FINISHED",
+      "exit_status": 0,
+      "result": 1,
+      "dot": "scripts/generated/s32_input_-2.dot",
+      "svg": "public/assets/provenance/s32_input_-2-slides.svg"
+    },
+    {
+      "snippet": 32,
+      "case": "input_2",
+      "root_pk": 242,
+      "root_uuid": "21cedaeb-11eb-4f23-8dc5-b0ea23b2eb6b",
+      "state": "ProcessState.FINISHED",
+      "exit_status": 0,
+      "result": 6,
+      "dot": "scripts/generated/s32_input_2.dot",
+      "svg": "public/assets/provenance/s32_input_2-slides.svg"
+    },
+    {
+      "snippet": 33,
+      "case": "input_-2",
+      "root_pk": 246,
+      "root_uuid": "1c776238-483f-47e0-9b74-72fd76605591",
+      "state": "ProcessState.FINISHED",
+      "exit_status": 0,
+      "result": 1,
+      "dot": "scripts/generated/s33_input_-2.dot",
+      "svg": "public/assets/provenance/s33_input_-2-slides.svg"
+    },
+    {
+      "snippet": 33,
+      "case": "input_2",
+      "root_pk": 253,
+      "root_uuid": "b3b25db8-d99f-4fbb-b052-c8374fb66b0b",
+      "state": "ProcessState.FINISHED",
+      "exit_status": 0,
+      "result": 6,
+      "dot": "scripts/generated/s33_input_2.dot",
+      "svg": "public/assets/provenance/s33_input_2-slides.svg"
+    },
+    {
+      "snippet": 34,
+      "case": "arithmetic_task",
+      "root_pk": 261,
+      "root_uuid": "b5e34a7a-60a3-4f34-8818-656569d9e318",
+      "state": "ProcessState.FINISHED",
+      "exit_status": 0,
+      "result": 20,
+      "dot": "scripts/generated/s34_arithmetic_task.dot",
+      "svg": "public/assets/provenance/s34_arithmetic_task-slides.svg"
+    },
+    {
+      "snippet": 35,
+      "case": "arithmetic_inline",
+      "root_pk": 266,
+      "root_uuid": "0da0d45b-45e1-4e26-8485-965b15ac7f2b",
+      "state": "ProcessState.FINISHED",
+      "exit_status": 0,
+      "result": 20,
+      "dot": "scripts/generated/s35_arithmetic_inline.dot",
+      "svg": "public/assets/provenance/s35_arithmetic_inline-slides.svg"
+    }
+  ],
+  "notes": [
+    {
+      "snippet": 4,
+      "status": "expected-build-error",
+      "diagnostic": "/Users/alexgo/code/aiida-core/worktree/graph-authoring-demo/pres/2026-11-19-v3-graph-language/scripts/s04_debug_graph.py:25:5: s04_debug_graph:broken: without an `else` arm the branch keeps the prior binding, so `total` must be assigned before the `if`; assign it first or add an `else` arm instead\n        if flag:\n        ^"
+    },
+    {
+      "snippet": 13,
+      "status": "exercised-by",
+      "snippet_id": 14
+    },
+    {
+      "snippet": 15,
+      "status": "exercised-by",
+      "snippet_id": 16
+    },
+    {
+      "snippet": 16,
+      "status": "partially-supported",
+      "reason": "Placement aliases execute; partial bindings are not supported in this checkout.",
+      "diagnostic": "/Users/alexgo/code/aiida-core/worktree/graph-authoring-demo/pres/2026-11-19-v3-graph-language/scripts/s16_placements.py:32:13: s16_placements:add_shifted: calls must name an importable declaration; unknown name 'partial'; check the spelling instead\n        add_y = partial(add, y=y)\n                ^"
+    },
+    {
+      "snippet": 17,
+      "status": "exercised-by",
+      "snippet_id": 18
+    },
+    {
+      "snippet": 19,
+      "status": "exercised-by",
+      "snippet_id": 20
+    },
+    {
+      "snippet": 21,
+      "status": "exercised-by",
+      "snippet_id": 22
+    },
+    {
+      "snippet": 23,
+      "status": "exercised-by",
+      "snippet_id": 24
+    },
+    {
+      "snippet": 25,
+      "status": "reference-only",
+      "reason": "WorkGraph builder fragment, not an AiiDA graph-language workflow. No fabricated provenance."
+    },
+    {
+      "snippet": 26,
+      "status": "reference-only",
+      "reason": "WorkGraph builder fragment, not an AiiDA graph-language workflow. No fabricated provenance."
+    },
+    {
+      "snippet": 28,
+      "status": "unimplemented-proposal",
+      "reason": "checkpoint() is not implemented. No execution or provenance is claimed."
+    },
+    {
+      "snippet": 29,
+      "status": "baseline-only",
+      "reason": "Executed current behavior, not proposed per-statement checkpointing."
+    }
+  ],
+  "concepts": [
+    {
+      "file": "concept_01.py",
+      "status": "contextual-fragment",
+      "provenance": "See s01_multiply_add_workchain and s02_multiply_add_graph."
+    },
+    {
+      "file": "concept_02.py",
+      "status": "contextual-fragment",
+      "provenance": "See s01_multiply_add_workchain and s02_multiply_add_graph."
+    },
+    {
+      "file": "concept_03.py",
+      "status": "contextual-fragment",
+      "provenance": "See s01_multiply_add_workchain and s02_multiply_add_graph."
+    },
+    {
+      "file": "concept_04.py",
+      "status": "contextual-fragment",
+      "provenance": "See s01_multiply_add_workchain and s02_multiply_add_graph."
+    },
+    {
+      "file": "concept_05.py",
+      "status": "contextual-fragment",
+      "provenance": "See s01_multiply_add_workchain and s02_multiply_add_graph."
+    },
+    {
+      "file": "concept_06.py",
+      "status": "contextual-fragment",
+      "provenance": "See s01_multiply_add_workchain and s02_multiply_add_graph."
+    },
+    {
+      "file": "concept_07.py",
+      "status": "contextual-fragment",
+      "provenance": "See s01_multiply_add_workchain and s02_multiply_add_graph."
+    },
+    {
+      "file": "concept_08.py",
+      "status": "contextual-fragment",
+      "provenance": "See s01_multiply_add_workchain and s02_multiply_add_graph."
+    },
+    {
+      "file": "concept_09.py",
+      "status": "contextual-fragment",
+      "provenance": "See s01_multiply_add_workchain and s02_multiply_add_graph."
+    }
+  ]
+}

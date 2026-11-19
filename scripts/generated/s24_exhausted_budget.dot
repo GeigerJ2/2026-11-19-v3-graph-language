@@ -1,0 +1,34 @@
+digraph {
+	graph [rankdir=LR]
+	N185 [label="s24_retry_loop:retry_ratio (185)
+State: finished
+Exit Code: 400" color=red fillcolor="#8cd499ff" penwidth=6 shape=ellipse style=filled]
+	N182 [label="Float (182)
+value: 12.0" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N183 [label="Float (183)
+value: 0.0" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N184 [label="Int (184)
+value: 0" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N187 [label="divide (187)
+State: finished
+Exit Code: 410" fillcolor="#de707f77" penwidth=0 shape=rectangle style=filled]
+	N188 [label="EnumData (188)" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N189 [label="require_value (189)
+State: excepted" fillcolor="#de707f77" penwidth=0 shape=rectangle style=filled]
+	N185 -> N187 [label="CALL_CALC
+initial" color="#000000" style=dotted]
+	N182 -> N187 [label="INPUT_CALC
+numerator" color="#000000" style=solid]
+	N183 -> N185 [label="INPUT_WORK
+denominator" color="#000000" style=dashed]
+	N185 -> N189 [label="CALL_CALC
+require_value" color="#000000" style=dotted]
+	N184 -> N185 [label="INPUT_WORK
+max_retries" color="#000000" style=dashed]
+	N183 -> N187 [label="INPUT_CALC
+denominator" color="#000000" style=solid]
+	N182 -> N185 [label="INPUT_WORK
+numerator" color="#000000" style=dashed]
+	N187 -> N188 [label="CREATE
+error" color="#000000" style=solid]
+}

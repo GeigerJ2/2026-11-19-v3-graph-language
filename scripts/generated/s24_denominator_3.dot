@@ -1,0 +1,44 @@
+digraph {
+	graph [rankdir=LR]
+	N176 [label="s24_retry_loop:retry_ratio (176)
+State: finished
+Exit Code: 0" color=red fillcolor="#8cd499ff" penwidth=6 shape=ellipse style=filled]
+	N173 [label="Float (173)
+value: 12.0" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N174 [label="Float (174)
+value: 3.0" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N175 [label="Int (175)
+value: 3" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N178 [label="divide (178)
+State: finished
+Exit Code: 0" fillcolor="#de707f77" penwidth=0 shape=rectangle style=filled]
+	N179 [label="Float (179)
+value: 4.0" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N180 [label="require_value (180)
+State: finished
+Exit Code: 0" fillcolor="#de707f77" penwidth=0 shape=rectangle style=filled]
+	N181 [label="Float (181)
+value: 4.0" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N174 -> N178 [label="INPUT_CALC
+denominator" color="#000000" style=solid]
+	N175 -> N176 [label="INPUT_WORK
+max_retries" color="#000000" style=dashed]
+	N180 -> N181 [label="CREATE
+result" color="#000000" style=solid]
+	N176 -> N181 [label="RETURN
+result" color="#000000" style=dashed]
+	N176 -> N178 [label="CALL_CALC
+initial" color="#000000" style=dotted]
+	N174 -> N176 [label="INPUT_WORK
+denominator" color="#000000" style=dashed]
+	N179 -> N180 [label="INPUT_CALC
+value" color="#000000" style=solid]
+	N173 -> N178 [label="INPUT_CALC
+numerator" color="#000000" style=solid]
+	N178 -> N179 [label="CREATE
+value" color="#000000" style=solid]
+	N173 -> N176 [label="INPUT_WORK
+numerator" color="#000000" style=dashed]
+	N176 -> N180 [label="CALL_CALC
+require_value" color="#000000" style=dotted]
+}

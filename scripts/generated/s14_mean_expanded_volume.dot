@@ -1,0 +1,72 @@
+digraph {
+	graph [rankdir=LR]
+	N98 [label="s14_map_reduce:mean_expanded_volume (98)
+State: finished
+Exit Code: 0" color=red fillcolor="#8cd499ff" penwidth=6 shape=ellipse style=filled]
+	N97 [label="DataList (97)" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N100 [label="StructureData (100)" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N101 [label="expand_cell (101)
+State: finished
+Exit Code: 0" fillcolor="#de707f77" penwidth=0 shape=rectangle style=filled]
+	N102 [label="StructureData (102)" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N103 [label="expand_cell (103)
+State: finished
+Exit Code: 0" fillcolor="#de707f77" penwidth=0 shape=rectangle style=filled]
+	N104 [label="StructureData (104)" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N105 [label="expand_cell (105)
+State: finished
+Exit Code: 0" fillcolor="#de707f77" penwidth=0 shape=rectangle style=filled]
+	N106 [label="StructureData (106)" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N107 [label="StructureData (107)" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N108 [label="StructureData (108)" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N109 [label="_collect_list (109)
+State: finished
+Exit Code: 0" fillcolor="#de707f77" penwidth=0 shape=rectangle style=filled]
+	N110 [label="StructureData (110)" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N111 [label="StructureData (111)" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N112 [label="StructureData (112)" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N113 [label="DataList (113)" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N114 [label="mean_cell_volume (114)
+State: finished
+Exit Code: 0" fillcolor="#de707f77" penwidth=0 shape=rectangle style=filled]
+	N115 [label="Float (115)
+value: 38.201625" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N113 -> N114 [label="INPUT_CALC
+structures" color="#000000" style=solid]
+	N100 -> N101 [label="INPUT_CALC
+structure" color="#000000" style=solid]
+	N98 -> N109 [label="CALL_CALC
+map_expand_cell_collect" color="#000000" style=dotted]
+	N105 -> N108 [label="CREATE
+result" color="#000000" style=solid]
+	N104 -> N105 [label="INPUT_CALC
+structure" color="#000000" style=solid]
+	N109 -> N113 [label="CREATE
+result" color="#000000" style=solid]
+	N108 -> N109 [label="INPUT_CALC
+item_2" color="#000000" style=solid]
+	N97 -> N98 [label="INPUT_WORK
+structures" color="#000000" style=dashed]
+	N98 -> N103 [label="CALL_CALC
+map_expand_cell_1" color="#000000" style=dotted]
+	N101 -> N106 [label="CREATE
+result" color="#000000" style=solid]
+	N98 -> N115 [label="RETURN
+result" color="#000000" style=dashed]
+	N98 -> N105 [label="CALL_CALC
+map_expand_cell_2" color="#000000" style=dotted]
+	N103 -> N107 [label="CREATE
+result" color="#000000" style=solid]
+	N106 -> N109 [label="INPUT_CALC
+item_0" color="#000000" style=solid]
+	N114 -> N115 [label="CREATE
+result" color="#000000" style=solid]
+	N98 -> N114 [label="CALL_CALC
+mean_cell_volume" color="#000000" style=dotted]
+	N107 -> N109 [label="INPUT_CALC
+item_1" color="#000000" style=solid]
+	N98 -> N101 [label="CALL_CALC
+map_expand_cell_0" color="#000000" style=dotted]
+	N102 -> N103 [label="INPUT_CALC
+structure" color="#000000" style=solid]
+}

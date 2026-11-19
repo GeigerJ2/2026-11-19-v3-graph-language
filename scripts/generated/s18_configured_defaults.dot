@@ -1,0 +1,35 @@
+digraph {
+	graph [rankdir=LR]
+	N127 [label="s18_configured:configured (127)
+State: finished
+Exit Code: 0" color=red fillcolor="#8cd499ff" penwidth=6 shape=ellipse style=filled]
+	N124 [label="Float (124)
+value: 10.0" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N125 [label="Float (125)
+value: 1.05" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N126 [label="Str (126)
+demo" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N129 [label="scaled_volume (129)
+State: finished
+Exit Code: 0" fillcolor="#de707f77" penwidth=0 shape=rectangle style=filled]
+	N130 [label="Float (130)
+value: 11.57625" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N125 -> N129 [label="INPUT_CALC
+settings__scaling__factor" color="#000000" style=solid]
+	N125 -> N127 [label="INPUT_WORK
+settings__scaling__factor" color="#000000" style=dashed]
+	N124 -> N129 [label="INPUT_CALC
+volume" color="#000000" style=solid]
+	N127 -> N130 [label="RETURN
+result" color="#000000" style=dashed]
+	N126 -> N129 [label="INPUT_CALC
+settings__label" color="#000000" style=solid]
+	N129 -> N130 [label="CREATE
+result" color="#000000" style=solid]
+	N127 -> N129 [label="CALL_CALC
+scaled_volume" color="#000000" style=dotted]
+	N124 -> N127 [label="INPUT_WORK
+volume" color="#000000" style=dashed]
+	N126 -> N127 [label="INPUT_WORK
+settings__label" color="#000000" style=dashed]
+}

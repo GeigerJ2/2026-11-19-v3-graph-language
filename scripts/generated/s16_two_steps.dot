@@ -1,0 +1,42 @@
+digraph {
+	graph [rankdir=LR]
+	N118 [label="s16_placements:two_steps (118)
+State: finished
+Exit Code: 0" color=red fillcolor="#8cd499ff" penwidth=6 shape=ellipse style=filled]
+	N116 [label="Int (116)
+value: 2" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N117 [label="Int (117)
+value: 3" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N120 [label="add (120)
+State: finished
+Exit Code: 0" fillcolor="#de707f77" penwidth=0 shape=rectangle style=filled]
+	N121 [label="Int (121)
+value: 5" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N122 [label="add (122)
+State: finished
+Exit Code: 0" fillcolor="#de707f77" penwidth=0 shape=rectangle style=filled]
+	N123 [label="Int (123)
+value: 8" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N118 -> N120 [label="CALL_CALC
+scf" color="#000000" style=dotted]
+	N118 -> N123 [label="RETURN
+result" color="#000000" style=dashed]
+	N116 -> N120 [label="INPUT_CALC
+x" color="#000000" style=solid]
+	N118 -> N122 [label="CALL_CALC
+nscf" color="#000000" style=dotted]
+	N120 -> N121 [label="CREATE
+result" color="#000000" style=solid]
+	N117 -> N118 [label="INPUT_WORK
+y" color="#000000" style=dashed]
+	N116 -> N118 [label="INPUT_WORK
+x" color="#000000" style=dashed]
+	N122 -> N123 [label="CREATE
+result" color="#000000" style=solid]
+	N121 -> N122 [label="INPUT_CALC
+x" color="#000000" style=solid]
+	N117 -> N120 [label="INPUT_CALC
+y" color="#000000" style=solid]
+	N117 -> N122 [label="INPUT_CALC
+y" color="#000000" style=solid]
+}

@@ -1,0 +1,31 @@
+digraph {
+	graph [rankdir=LR]
+	N33 [label="s05_fix_prior_binding:fixed (33)
+State: finished
+Exit Code: 0" color=red fillcolor="#8cd499ff" penwidth=6 shape=ellipse style=filled]
+	N31 [label="Int (31)
+value: 10" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N32 [label="Bool (32)
+True" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N35 [label="Int (35)
+value: 1" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N36 [label="add (36)
+State: finished
+Exit Code: 0" fillcolor="#de707f77" penwidth=0 shape=rectangle style=filled]
+	N37 [label="Int (37)
+value: 11" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N32 -> N33 [label="INPUT_WORK
+flag" color="#000000" style=dashed]
+	N35 -> N36 [label="INPUT_CALC
+y" color="#000000" style=solid]
+	N33 -> N37 [label="RETURN
+result" color="#000000" style=dashed]
+	N33 -> N36 [label="CALL_CALC
+branch_1__add" color="#000000" style=dotted]
+	N31 -> N36 [label="INPUT_CALC
+x" color="#000000" style=solid]
+	N31 -> N33 [label="INPUT_WORK
+value" color="#000000" style=dashed]
+	N36 -> N37 [label="CREATE
+result" color="#000000" style=solid]
+}

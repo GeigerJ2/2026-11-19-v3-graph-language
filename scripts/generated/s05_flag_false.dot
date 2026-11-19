@@ -1,0 +1,16 @@
+digraph {
+	graph [rankdir=LR]
+	N40 [label="s05_fix_prior_binding:fixed (40)
+State: finished
+Exit Code: 0" color=red fillcolor="#8cd499ff" penwidth=6 shape=ellipse style=filled]
+	N38 [label="Int (38)
+value: 10" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N39 [label="Bool (39)
+False" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N40 -> N38 [label="RETURN
+result" color="#000000" style=dashed]
+	N38 -> N40 [label="INPUT_WORK
+value" color="#000000" style=dashed]
+	N39 -> N40 [label="INPUT_WORK
+flag" color="#000000" style=dashed]
+}

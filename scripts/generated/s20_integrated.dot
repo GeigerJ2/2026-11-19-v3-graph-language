@@ -1,0 +1,94 @@
+digraph {
+	graph [rankdir=LR]
+	N134 [label="s19_existing_processes:integrated (134)
+State: finished
+Exit Code: 0" color=red fillcolor="#8cd499ff" penwidth=6 shape=ellipse style=filled]
+	N1 [label="InstalledCode (1)
+bash@localhost" fillcolor="#4ca4b9aa" penwidth=0 shape=ellipse style=filled]
+	N131 [label="Int (131)
+value: 2" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N132 [label="Int (132)
+value: 3" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N133 [label="Int (133)
+value: 4" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N136 [label="MultiplyAddWorkChain (136)
+State: finished
+Exit Code: 0" fillcolor="#e38851ff" penwidth=0 shape=rectangle style=filled]
+	N137 [label="multiply (137)
+State: finished
+Exit Code: 0" fillcolor="#de707f77" penwidth=0 shape=rectangle style=filled]
+	N138 [label="Int (138)
+value: 6" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N139 [label="ArithmeticAddCalculation (139)
+State: finished
+Exit Code: 0" fillcolor="#de707fff" penwidth=0 shape=rectangle style=filled]
+	N140 [label="RemoteData (140)
+@localhost" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N141 [label="FolderData (141)" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N142 [label="Int (142)
+value: 10" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N143 [label="ArithmeticAddCalculation (143)
+State: finished
+Exit Code: 0" fillcolor="#de707fff" penwidth=0 shape=rectangle style=filled]
+	N144 [label="RemoteData (144)
+@localhost" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N145 [label="FolderData (145)" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N146 [label="Int (146)
+value: 14" fillcolor="#8cd499ff" penwidth=0 shape=ellipse style=filled]
+	N1 -> N136 [label="INPUT_WORK
+code" color="#000000" style=dashed]
+	N133 -> N136 [label="INPUT_WORK
+z" color="#000000" style=dashed]
+	N134 -> N136 [label="CALL_WORK
+multiply_add" color="#000000" style=dotted]
+	N132 -> N136 [label="INPUT_WORK
+y" color="#000000" style=dashed]
+	N134 -> N146 [label="RETURN
+result" color="#000000" style=dashed]
+	N133 -> N143 [label="INPUT_CALC
+y" color="#000000" style=solid]
+	N131 -> N134 [label="INPUT_WORK
+x" color="#000000" style=dashed]
+	N142 -> N143 [label="INPUT_CALC
+x" color="#000000" style=solid]
+	N131 -> N137 [label="INPUT_CALC
+x" color="#000000" style=solid]
+	N136 -> N137 [label="CALL_CALC
+CALL" color="#000000" style=dotted]
+	N139 -> N140 [label="CREATE
+remote_folder" color="#000000" style=solid]
+	N138 -> N139 [label="INPUT_CALC
+x" color="#000000" style=solid]
+	N134 -> N143 [label="CALL_CALC
+add_calc" color="#000000" style=dotted]
+	N139 -> N142 [label="CREATE
+sum" color="#000000" style=solid]
+	N133 -> N139 [label="INPUT_CALC
+y" color="#000000" style=solid]
+	N143 -> N144 [label="CREATE
+remote_folder" color="#000000" style=solid]
+	N131 -> N136 [label="INPUT_WORK
+x" color="#000000" style=dashed]
+	N1 -> N139 [label="INPUT_CALC
+code" color="#000000" style=solid]
+	N1 -> N143 [label="INPUT_CALC
+code" color="#000000" style=solid]
+	N136 -> N139 [label="CALL_CALC
+CALL" color="#000000" style=dotted]
+	N133 -> N134 [label="INPUT_WORK
+z" color="#000000" style=dashed]
+	N136 -> N142 [label="RETURN
+result" color="#000000" style=dashed]
+	N143 -> N146 [label="CREATE
+sum" color="#000000" style=solid]
+	N139 -> N141 [label="CREATE
+retrieved" color="#000000" style=solid]
+	N132 -> N137 [label="INPUT_CALC
+y" color="#000000" style=solid]
+	N143 -> N145 [label="CREATE
+retrieved" color="#000000" style=solid]
+	N137 -> N138 [label="CREATE
+result" color="#000000" style=solid]
+	N132 -> N134 [label="INPUT_WORK
+y" color="#000000" style=dashed]
+}
