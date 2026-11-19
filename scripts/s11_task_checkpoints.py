@@ -11,12 +11,20 @@
 Status: runnable. See README.md for execution context.
 """
 
-from support import add, multiply
-
-from aiida.engine import graph
+from aiida.engine import graph, task
 
 
 # region example
+@task
+def multiply(x: int, y: int) -> int:
+    return x * y
+
+
+@task
+def add(x: int, y: int) -> int:
+    return x + y
+
+
 @graph
 def calculate(x: int, y: int, z: int) -> int:
     product = multiply(x=x, y=y)  # checkpoint

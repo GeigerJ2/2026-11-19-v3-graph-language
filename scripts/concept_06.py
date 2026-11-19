@@ -24,7 +24,11 @@ class OutlineFragment(WorkChain):
         self.ctx.product = multiply(self.inputs.x, self.inputs.y)
 
     def add(self):
-        future = self.submit(ArithmeticAddCalculation, x=self.ctx.product, y=self.inputs.z)
+        future = self.submit(
+            ArithmeticAddCalculation,
+            x=self.ctx.product,
+            y=self.inputs.z,
+        )
         return ToContext(addition=future)
 
     # endregion example

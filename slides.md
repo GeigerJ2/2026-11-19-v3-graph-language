@@ -54,12 +54,8 @@ layoutClass: side-by-side
 
 <v-click>
 
-- **Less code and less indirection:**
-  - `spec.input` / `spec.output` &rarr; function signature
-  - outline and step methods &rarr; `@graph` body and tasks
-  - `submit`, `ToContext`, and `self.ctx` &rarr; named values
-- **Static verification:** defined values, valid connections, compatible types; actionable source-line errors.
-- **No plugin infrastructure:** no entry points or packaging required
+- **Less code and less indirection**
+- **Static verification**
 
 </v-click>
 
@@ -98,9 +94,15 @@ layoutClass: dense
 
 <<< @/scripts/s04_debug_graph.py#build python
 
+<v-click>
+
 <<< @/scripts/expected_build_error.txt text
 
+</v-click>
+
 ::right::
+
+<v-click>
 
 **Fix: bind `total` before the `if`, or add an `else` arm**
 
@@ -110,12 +112,9 @@ layoutClass: dense
 
 - Missing binding: source line, column, suggested fixes.
 - `build()`: no profile or inputs.
+- Task bodies still can fail at runtime.
 
-<div class="verdict">
-
-Task bodies still need runtime tests.
-
-</div>
+</v-click>
 
 ---
 layout: section
@@ -142,7 +141,7 @@ layout: section
 <div class="concept-arrow concept-ports"><strong>Ports &amp; types</strong><span>⟶</span></div>
 <ConceptCode file="concept_05.py" region="example" highlights="[[&quot;x: int, y: int, z: int&quot;, &quot;concept-ports&quot;], [&quot;int&quot;, &quot;concept-ports&quot;]]" />
 
-<ConceptCode file="concept_06.py" region="example" highlights="[[&quot;spec.outline(cls.multiply, cls.add, cls.result)&quot;, &quot;concept-task&quot;], [&quot;self.ctx.product&quot;, &quot;concept-state&quot;], [&quot;multiply(&quot;, &quot;concept-function&quot;], [&quot;self.inputs.x, self.inputs.y)&quot;, &quot;concept-function&quot;], [&quot;self.submit(ArithmeticAddCalculation,&quot;, &quot;concept-task&quot;], [&quot;x=self.ctx.product, y=self.inputs.z)&quot;, &quot;concept-task&quot;], [&quot;addition&quot;, &quot;concept-state&quot;]]" />
+<ConceptCode file="concept_06.py" region="example" highlights="[[&quot;spec.outline(cls.multiply, cls.add, cls.result)&quot;, &quot;concept-task&quot;], [&quot;self.ctx.product&quot;, &quot;concept-state&quot;], [&quot;multiply(&quot;, &quot;concept-function&quot;], [&quot;self.inputs.x, self.inputs.y)&quot;, &quot;concept-function&quot;], [&quot;self.submit(&quot;, &quot;concept-task&quot;], [&quot;ArithmeticAddCalculation,&quot;, &quot;concept-task&quot;], [&quot;x=self.ctx.product,&quot;, &quot;concept-task&quot;], [&quot;y=self.inputs.z,&quot;, &quot;concept-task&quot;], [&quot;addition&quot;, &quot;concept-state&quot;]]" />
 <div class="concept-arrow concept-task"><strong>Steps &amp; submit</strong><span>⟶</span><strong class="concept-state">Context → values</strong></div>
 <ConceptCode file="concept_07.py" region="example" highlights="[[&quot;product&quot;, &quot;concept-state&quot;], [&quot;multiply(x=x, y=y)&quot;, &quot;concept-function&quot;], [&quot;addition&quot;, &quot;concept-state&quot;], [&quot;add_calc(x=product, y=z)&quot;, &quot;concept-task&quot;]]" />
 
@@ -154,7 +153,7 @@ layout: section
 
 ---
 
-# Python executes task bodies; AiiDA executes graphs
+# Python executes task bodies and AiiDA executes graphs
 
 <div class="grid grid-cols-2 gap-8 interpreter-comparison">
 <div>
@@ -291,15 +290,13 @@ Python logo: Devicon python-original.svg, https://github.com/devicons/devicon
 
 # Checkpointing and Provenance
 
-<div class="grid grid-cols-2 gap-8 statement-checkpoints">
+<div class="grid grid-cols-2 gap-8 checkpoint-provenance">
 <div>
 
 ### Task calls
 
 <<< @/scripts/s11_task_checkpoints.py#example python
 
-- **Checkpoint:** while waiting for each task.
-- **Provenance:** one `CalcFunctionNode` per call; `product` is a stored node.
 
 </div>
 <div>
@@ -308,18 +305,33 @@ Python logo: Devicon python-original.svg, https://github.com/devicons/devicon
 
 <<< @/scripts/s12_inline_checkpoints.py#example python
 
-- **Checkpoint:** while waiting for `record`; holds `product` and `total`.
-- **Provenance:** only `record`; the arithmetic leaves no nodes.
-
+```python
+@graph
+def count(n: int) -> int:
+    i = 0
+    while i < n:
+        i = i + 1
+    doubled = i * 2
+    return record(value=doubled)  # checkpoint
+```
 </div>
 </div>
 
-<div class="mt-8">
+<div class="mt-6">
 
-- **Provenance records tasks and data:** tasks create outputs, the graph returns them; `if` branches leave no nodes.
+- Provenance is stored at task boundaries.
+- Checkpoints are written on graph process state changes.
 - (De)coupling of checkpointing and provenance TBD (see later slide)
 
 </div>
+
+<style>
+.checkpoint-provenance {
+  --slidev-code-font-size: 11px;
+  --slidev-code-line-height: 15px;
+}
+.checkpoint-provenance h3 { margin: 0.4rem 0; }
+</style>
 
 <!--
 multiply, add, and record are @task functions; record returns its argument as a stored
