@@ -86,6 +86,8 @@ class MultiplyAddWorkChain(WorkChain):
 
 ::right::
 
+<v-click>
+
 ```python
 from aiida.calculations.arithmetic.add import ArithmeticAddCalculation
 from aiida.engine import graph, task
@@ -106,22 +108,19 @@ def multiply_add(x: int, y: int, z: int, code: Code) -> int | float:
     return total.sum
 ```
 
----
+</v-click>
 
-# Advantages over WorkChains
+<v-click>
 
-- **Less code:**
-  - The function signature replaces `spec.input` and `spec.output`.
-  - The function body replaces the outline and its step methods.
-  - Named values replace `submit`, `ToContext`, and `self.ctx`.
-- **Static checks before launch:** `build()` checks names, wiring, and types without running tasks, and reports the offending source line.
-- **No plugin infrastructure:**
-  - Graphs are defined in modules, scripts, or notebooks, without entry points or packaging.
-  - Each submission carries the graph structure and a pickled copy of every task.
-- **Daemon execution:** one `GraphProcess`, recorded as a `GraphNode`.
-- **Concurrency from data flow:** the graph process submits every task whose inputs are ready.
-- **Declared failures as values:** `Result[..., Errors]` outputs branch and retry in the graph body.
-- **Reuse:** `task(...)` wraps existing CalcJobs and WorkChains; graphs nest as subgraphs.
+- **Less code and less indirection:**
+  - `spec.input` / `spec.output` &rarr; function signature
+  - outline and step methods &rarr; `@graph` body and tasks
+  - `submit`, `ToContext`, and `self.ctx` &rarr; named values
+- **Static verification:** defined values, valid connections, compatible types; actionable source-line errors.
+- **No plugin infrastructure:** no entry points or packaging required
+
+</v-click>
+
 
 ---
 layout: two-cols-header
@@ -167,7 +166,9 @@ class ConditionalCtxChain(WorkChain):
 ::right::
 
 - `flag=True`: result is `value + 1`.
-- `flag=False`: `finish` raises:
+- `flag=False`: `finish` raises at runtime for `ctx`:
+
+<br> 
 
 ```text
 AttributeError: 'AttributeDict' object has no attribute 'total'
@@ -202,6 +203,17 @@ def broken(value: int, flag: bool) -> int:
 broken.build()
 ```
 
+```text
+GraphLanguageError: broken.py:11:5: __main__:broken:
+  without an `else` arm the branch keeps the prior
+  binding, so `total` must be assigned before the `if`;
+  assign it first or add an `else` arm instead
+    if flag:
+    ^
+```
+
+::right::
+
 **Fix: bind `total` before the `if`, or add an `else` arm**
 
 ```python
@@ -217,17 +229,6 @@ else:
     total = add(x=value, y=2)
 ```
 
-::right::
-
-```text
-GraphLanguageError: broken.py:11:5: __main__:broken:
-  without an `else` arm the branch keeps the prior
-  binding, so `total` must be assigned before the `if`;
-  assign it first or add an `else` arm instead
-    if flag:
-    ^
-```
-
 - Missing binding: source line, column, suggested fixes.
 - `build()`: no profile or inputs.
 
@@ -236,27 +237,6 @@ GraphLanguageError: broken.py:11:5: __main__:broken:
 Task bodies still need runtime tests.
 
 </div>
-
----
-
-# Validation at build, launch, and run time
-
-<br>
-
-**Build**
-
-- Syntax, wiring, contracts; no execution or nodes.
-- Source line, column, suggested fixes.
-
-**Launch**
-
-- Inputs, defaults, per-placement `runtime_config`.
-- Errors identify invalid placements or missing execution inputs.
-
-**Run**
-
-- Condition types, required outputs, declared failures.
-- Restarts restore progress and inline state; completed tasks are reused.
 
 ---
 layout: section
@@ -475,65 +455,60 @@ Python logo: Devicon python-original.svg, https://github.com/devicons/devicon
 
 ---
 
-# Current: task calls checkpoint; inline operations do not
+# Checkpointing and Provenance
 
 <div class="grid grid-cols-2 gap-8 statement-checkpoints">
 <div>
 
-### Separate tasks · checkpoint boundaries
+### Task calls
 
 ```python
 @graph
 def calculate(x: int, y: int, z: int) -> int:
-    product = multiply(x=x, y=y)
-    # ← Checkpoint: wait / resume
-
-    total = add(x=product, y=z)
-    # ← Checkpoint: wait / resume
-
+    product = multiply(x=x, y=y)  # checkpoint
+    total = add(x=product, y=z)  # checkpoint
     return total
 ```
 
-Each call is a **`ProcessTask`**. The workflow checkpoints at task wait / resume boundaries, retaining completed task results.
+- **Checkpoint:** while waiting for each task.
+- **Provenance:** one `CalcFunctionNode` per call; `product` is a stored node.
 
 </div>
 <div>
 
-### Inline operations · no boundary between them
+### Inline operations
 
 ```python
 @graph
 def calculate(x: int, y: int, z: int) -> int:
     product = x * y
-    # No checkpoint here
-
     total = product + z
-    # No checkpoint here
-
-    return record(value=total)
-    # ← Checkpoint: task wait / resume
+    return record(value=total)  # checkpoint
 ```
 
-Each arithmetic step is an **`InlineOperation`**. Both execute in one scheduling step; only the final task call introduces a wait / resume boundary.
+- **Checkpoint:** while waiting for `record`; holds `product` and `total`.
+- **Provenance:** only `record`; the arithmetic leaves no nodes.
 
 </div>
 </div>
 
-**Current behavior:** separate task calls provide recovery boundaries; inline arithmetic may be replayed since the last checkpoint.
+<div class="mt-8">
+
+- **Provenance records tasks and data:** tasks create outputs, the graph returns them; `if` branches leave no nodes.
+- (De)coupling of checkpointing and provenance TBD (see later slide)
+
+</div>
 
 <!--
-Both examples are graph functions; the distinction is task placement versus inline
-operations, not Python function bodies versus graph bodies.
-multiply and add are declared @tasks performing multiplication and addition.
-Their implementations are omitted to focus on scheduling boundaries.
-The scheduler dispatches multiply, waits, then dispatches add only after its dependency
-succeeds. Process-state transitions persist progress when persistence is enabled.
-The arrows are conceptual wait/resume boundaries, not literal per-call checkpoint
-instructions or an exactly-once guarantee around external side effects.
-The inline graph evaluates mul and add in one scheduling step before dispatching record.
-record(value) is a task returning its argument as stored data, required for root output.
-Checkpointing does not preserve an instruction pointer inside arbitrary Python tasks.
-This slide describes current behavior; the next slide describes a proposed design.
+multiply, add, and record are @task functions; record returns its argument as a stored
+node, because a root graph cannot return a new inline value.
+The graph checkpoints on every process state change: entering waiting after a step
+submits tasks, and again on resume.
+Inline values live in the scope state (GraphRun.scopes[...]['values']) and are
+serialized into that checkpoint.
+A restart skips inline operations that already have a value.
+Provenance records task calls and their data nodes; inline values are checkpointed, not stored.
+Checkpointing does not preserve an instruction pointer inside a task body.
 -->
 
 ---
@@ -1447,6 +1422,27 @@ layout: section
 ---
 
 # Backup slides
+
+---
+
+# Validation at build, launch, and run time
+
+<br>
+
+**Build**
+
+- Syntax, wiring, contracts; no execution or nodes.
+- Source line, column, suggested fixes.
+
+**Launch**
+
+- Inputs, defaults, per-placement `runtime_config`.
+- Errors identify invalid placements or missing execution inputs.
+
+**Run**
+
+- Condition types, required outputs, declared failures.
+- Restarts restore progress and inline state; completed tasks are reused.
 
 ---
 
