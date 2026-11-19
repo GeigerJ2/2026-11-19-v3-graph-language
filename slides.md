@@ -22,13 +22,10 @@ colorSchema: light
 
 # Contents
 
-1. Motivation
-2. Separating build and run time
-3. Control flow
-4. Data flow
-5. Interfaces and reuse
-6. Case study
-7. Project development
+1. Motivation (JG)
+2. Concepts (JG)
+3. Writing workflows (AG)
+4. Project development (AG)
 
 ---
 layout: section
@@ -127,6 +124,147 @@ def multiply_add(x: int, y: int, z: int, code: Code) -> int | float:
 - **Reuse:** `task(...)` wraps existing CalcJobs and WorkChains; graphs nest as subgraphs.
 
 ---
+layout: two-cols-header
+layoutClass: dense
+---
+
+# Debugging WorkChains
+
+::left::
+
+```python
+from aiida.engine import WorkChain, calcfunction, if_
+from aiida.orm import Bool, Int
+
+
+@calcfunction
+def increment(value: Int) -> Int:
+    return value + 1
+
+
+class ConditionalCtxChain(WorkChain):
+    @classmethod
+    def define(cls, spec):
+        super().define(spec)
+        spec.input('value', valid_type=Int)
+        spec.input('flag', valid_type=Bool)
+        spec.output('result', valid_type=Int)
+        spec.outline(
+            if_(cls.should_add)(cls.add_one),
+            cls.finish,
+        )
+
+    def should_add(self):
+        return self.inputs.flag.value
+
+    def add_one(self):
+        self.ctx.total = increment(self.inputs.value)
+
+    def finish(self):
+        self.out('result', self.ctx.total)
+```
+
+::right::
+
+- `flag=True`: result is `value + 1`.
+- `flag=False`: `finish` raises:
+
+```text
+AttributeError: 'AttributeDict' object has no attribute 'total'
+```
+
+
+---
+layout: two-cols-header
+layoutClass: dense
+---
+
+# Debugging graphs
+
+::left::
+
+```python
+from aiida.engine import graph, task
+
+
+@task
+def add(x: int, y: int) -> int:
+    return x + y
+
+
+@graph
+def broken(value: int, flag: bool) -> int:
+    if flag:
+        total = add(x=value, y=1)
+    return total
+
+
+broken.build()
+```
+
+**Fix: bind `total` before the `if`, or add an `else` arm**
+
+```python
+total = value
+if flag:
+    total = add(x=value, y=1)
+```
+
+```python
+if flag:
+    total = add(x=value, y=1)
+else:
+    total = add(x=value, y=2)
+```
+
+::right::
+
+```text
+GraphLanguageError: broken.py:11:5: __main__:broken:
+  without an `else` arm the branch keeps the prior
+  binding, so `total` must be assigned before the `if`;
+  assign it first or add an `else` arm instead
+    if flag:
+    ^
+```
+
+- Missing binding: source line, column, suggested fixes.
+- `build()`: no profile or inputs.
+
+<div class="verdict">
+
+Task bodies still need runtime tests.
+
+</div>
+
+---
+
+# Validation at build, launch, and run time
+
+<br>
+
+**Build**
+
+- Syntax, wiring, contracts; no execution or nodes.
+- Source line, column, suggested fixes.
+
+**Launch**
+
+- Inputs, defaults, per-placement `runtime_config`.
+- Errors identify invalid placements or missing execution inputs.
+
+**Run**
+
+- Condition types, required outputs, declared failures.
+- Restarts restore progress and inline state; completed tasks are reused.
+
+---
+layout: section
+---
+
+# Concepts
+
+---
 
 # WorkChain concepts in a graph
 
@@ -174,21 +312,6 @@ def multiply_add(
 <div class="concept-arrow concept-return"><strong>Outputs</strong><span>⟶</span></div>
 <pre class="concept-code"><code>    <span class="concept-return">return</span> <span class="concept-state">addition</span>.sum</code></pre>
 </div>
-
-
----
-
-# Graph body and task code
-
-| | `@task` | `@graph` body |
-| --- | --- | --- |
-| Role | Computation | Orchestration |
-| Language | Arbitrary Python | Limited Python subset |
-| Validation | Ports at declaration; body at runtime | Wiring at build; values at runtime |
-| Interpreter | Python | AiiDA |
-| Process | Separate AiiDA process per call | Same graph process |
-| Parallelism | Independent calls can use separate workers | Submits all ready calls before waiting |
-| Provenance | Data inputs and outputs are nodes | Inline state is checkpointed |
 
 
 ---
@@ -417,148 +540,7 @@ This slide describes current behavior; the next slide describes a proposed desig
 layout: section
 ---
 
-# Separating build and run time
-
----
-layout: two-cols-header
-layoutClass: dense
----
-
-# Debugging WorkChains
-
-::left::
-
-```python
-from aiida.engine import WorkChain, calcfunction, if_
-from aiida.orm import Bool, Int
-
-
-@calcfunction
-def increment(value: Int) -> Int:
-    return value + 1
-
-
-class ConditionalCtxChain(WorkChain):
-    @classmethod
-    def define(cls, spec):
-        super().define(spec)
-        spec.input('value', valid_type=Int)
-        spec.input('flag', valid_type=Bool)
-        spec.output('result', valid_type=Int)
-        spec.outline(
-            if_(cls.should_add)(cls.add_one),
-            cls.finish,
-        )
-
-    def should_add(self):
-        return self.inputs.flag.value
-
-    def add_one(self):
-        self.ctx.total = increment(self.inputs.value)
-
-    def finish(self):
-        self.out('result', self.ctx.total)
-```
-
-::right::
-
-- `flag=True`: result is `value + 1`.
-- `flag=False`: `finish` raises:
-
-```text
-AttributeError: 'AttributeDict' object has no attribute 'total'
-```
-
-
----
-layout: two-cols-header
-layoutClass: dense
----
-
-# Debugging graphs
-
-::left::
-
-```python
-from aiida.engine import graph, task
-
-
-@task
-def add(x: int, y: int) -> int:
-    return x + y
-
-
-@graph
-def broken(value: int, flag: bool) -> int:
-    if flag:
-        total = add(x=value, y=1)
-    return total
-
-
-broken.build()
-```
-
-**Fix: bind `total` before the `if`, or add an `else` arm**
-
-```python
-total = value
-if flag:
-    total = add(x=value, y=1)
-```
-
-```python
-if flag:
-    total = add(x=value, y=1)
-else:
-    total = add(x=value, y=2)
-```
-
-::right::
-
-```text
-GraphLanguageError: broken.py:11:5: __main__:broken:
-  without an `else` arm the branch keeps the prior
-  binding, so `total` must be assigned before the `if`;
-  assign it first or add an `else` arm instead
-    if flag:
-    ^
-```
-
-- Missing binding: source line, column, suggested fixes.
-- `build()`: no profile or inputs.
-
-<div class="verdict">
-
-Task bodies still need runtime tests.
-
-</div>
-
----
-
-# Validation at build, launch, and run time
-
-<br>
-
-**Build**
-
-- Syntax, wiring, contracts; no execution or nodes.
-- Source line, column, suggested fixes.
-
-**Launch**
-
-- Inputs, defaults, per-placement `runtime_config`.
-- Errors identify invalid placements or missing execution inputs.
-
-**Run**
-
-- Condition types, required outputs, declared failures.
-- Restarts restore progress and inline state; completed tasks are reused.
-
----
-layout: section
----
-
-# Control flow
+# Writing workflows
 
 ---
 layout: two-cols-header
@@ -596,22 +578,6 @@ def choose(x: int, flag: bool) -> int:
         chosen = add(x=x, y=2)
     return chosen
 ```
-
----
-
-# Provenance of a branch run
-
-<img class="provenance" src="/assets/choose-provenance.svg" alt="AiiDA-generated provenance from stored nodes and links" />
-
-<div class="caption">
-
-Local run: `x=10, flag=True → result=11`. Illustrative node IDs.
-
-</div>
-
-- Branches, loops, subgraphs, maps share one graph process.
-- Separate task processes; hierarchical call labels (`branch_1__add`).
-- Task creates (`CREATE`); graph returns (`RETURN`) the same node.
 
 ---
 layout: two-cols-header
@@ -667,53 +633,6 @@ assert result.value == 11
 ```
 
 The query follows **workflow → RETURN → result**, regardless of which branch ran.
-
----
-layout: two-cols-header
-layoutClass: dense
----
-
-# Subgraphs and conditional expressions
-
-::left::
-
-```python
-from aiida.engine import graph, task
-
-
-@task
-def multiply(x: int, y: int) -> int:
-    return x * y
-
-
-@task
-def add(x: int, y: int) -> int:
-    return x + y
-
-
-@graph
-def multiply_add(x: int, y: int, z: int) -> int:
-    product = multiply(x=x, y=y)
-    return add(x=product, y=z)
-```
-
-::right::
-
-```python
-@graph
-def outer(x: int, y: int, z: int) -> int:
-    inner = multiply_add(x=x, y=y, z=z)
-    return add(x=inner, y=x)
-
-
-@graph
-def choose_scaled(value: int, flag: bool) -> int:
-    chosen = (value + 1) if flag else (value - 1)
-    return add(x=chosen, y=0)
-```
-
-- Subgraphs share the graph process.
-- Conditional expressions evaluate only the selected side.
 
 ---
 layout: two-cols-header
@@ -814,12 +733,6 @@ def restartable(x: int, max_retries: int, attempt: int = 0) -> int:
 - `max_retries`: repeats after the initial call.
 - Loop iterations run sequentially.
 - Counter: inline. All attempts failed: `ensure` fails the graph.
-
----
-layout: section
----
-
-# Data flow
 
 ---
 layout: two-cols-header
@@ -933,12 +846,6 @@ def add_shifted(x: int, y: int) -> int:
     first = add_y.alias('first')(x=x)
     return add_y.alias('second')(x=first)
 ```
-
----
-layout: section
----
-
-# Interfaces and reuse
 
 ---
 layout: two-cols-header
@@ -1095,119 +1002,6 @@ outputs, node = run_get_node(
 - `task(...)`: existing CalcJobs and WorkChains, unchanged.
 - Graph returns the CalcJob's existing `sum` node.
 - `runtime_config`: `code`, `metadata`.
-
----
-layout: section
----
-
-# Koopmans case study
-
----
-
-# Koopmans case study
-
-- One `Wannier90WorkChain` per block, then merge Hamiltonians.
-- Shared structure, k-point grid, band k-points.
-- WorkGraph `for` → `par_map`.
-- Feedback: shared inputs (`partial`), inline grid arithmetic.
-
----
-layout: two-cols-header
-layoutClass: dense
----
-
-# Koopmans case study: shared inputs for mapped calls
-
-::left::
-
-**First port**
-
-```python
-# bundle: task copying shared inputs into one DataDict per block
-# unpack: task reading them back out of one item
-
-
-@graph
-def wannierize_one(item: DataDict) -> ...:
-    inputs = unpack(item=item)
-    return Wannierize(
-        structure=inputs.structure,
-        block=inputs.block,
-        mesh=inputs.mesh,
-        bands_kpoints=inputs.bands_kpoints,
-    )
-
-
-# in wannierize_blocks
-items = bundle(
-    blocks=blocks,
-    structure=structure,
-    mesh=mesh,
-    bands_kpoints=bands_kpoints,
-)
-results = par_map(wannierize_one, items)
-```
-
-::right::
-
-**Now**
-
-```python
-# in wannierize_blocks
-configured = partial(
-    Wannierize,
-    structure=structure,
-    mesh=mesh,
-    bands_kpoints=bands_kpoints,
-)
-results = par_map(configured, blocks)
-```
-
-- `partial`: shared inputs; `par_map`: one `block` per call.
-- Shared node identities preserved.
-- `DataDict`: keys and insertion order preserved.
-
----
-layout: two-cols-header
-layoutClass: dense
----
-
-# Koopmans case study: list arithmetic inline
-
-::left::
-
-**First port**
-
-```python
-@task
-def scale_grid(grid: list[int], factor: int) -> list[int]:
-    return [n * factor for n in grid]
-
-
-# in wannierize_blocks
-mesh = scale_grid(grid=grid, factor=factor)
-```
-
-::right::
-
-**Now**
-
-```python
-# in wannierize_blocks
-mesh = [n * factor for n in grid]
-```
-
-- Comprehension: same graph process, checkpointed value.
-- `list[T]` and `dict[str, T]`: indexing and comprehensions.
-
----
-
-# Koopmans case study: open points
-
-- Map inputs: `DataDict`, `DataList`; typed Python mappings unsupported.
-- Inline `sum`, generators, `tuple` unsupported; `count_wann` stays a task.
-- Positivity, grid length: runtime checks in tasks.
-- Per-item metadata unsupported; `.alias(...)` names the whole map.
 
 ---
 layout: section
@@ -1466,7 +1260,6 @@ concrete problems in those rewrites, and decide how to solve them in the design.
 Second, we give the language to people who have used WorkGraph, ask them to explore
 it, collect their feedback, and iterate. This is not the same as co-authoring each
 plugin rewrite with its authors.
-The following Koopmans case study illustrates the first loop.
 -->
 
 ---
@@ -1648,3 +1441,39 @@ its own output Data node. That input has no calculation creator for the inline a
 Do not mistake that materialization for provenance of add or multiply.
 The script asserts output values, child counts, result creators, and workflow returns.
 -->
+
+---
+layout: section
+---
+
+# Backup slides
+
+---
+
+# Graph body and task code
+
+| | `@task` | `@graph` body |
+| --- | --- | --- |
+| Role | Computation | Orchestration |
+| Language | Arbitrary Python | Limited Python subset |
+| Validation | Ports at declaration; body at runtime | Wiring at build; values at runtime |
+| Interpreter | Python | AiiDA |
+| Process | Separate AiiDA process per call | Same graph process |
+| Parallelism | Independent calls can use separate workers | Submits all ready calls before waiting |
+| Provenance | Data inputs and outputs are nodes | Inline state is checkpointed |
+
+---
+
+# Provenance of a branch run
+
+<img class="provenance" src="/assets/choose-provenance.svg" alt="AiiDA-generated provenance from stored nodes and links" />
+
+<div class="caption">
+
+Local run: `x=10, flag=True → result=11`. Illustrative node IDs.
+
+</div>
+
+- Branches, loops, subgraphs, maps share one graph process.
+- Separate task processes; hierarchical call labels (`branch_1__add`).
+- Task creates (`CREATE`); graph returns (`RETURN`) the same node.
