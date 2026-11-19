@@ -226,6 +226,127 @@ layout: section
 # Separating build and run time
 
 ---
+class: branch-binding
+---
+
+# Branch results: Python binding vs. graph interpretation
+
+**WorkGraph executes the builder in Python. The graph language interprets the control flow at run time.**
+
+<div class="grid grid-cols-3 gap-5">
+<div>
+
+### WorkGraph: no runtime selection
+
+```python
+with If(first_sum < 0):
+    result = add(
+        x=first_sum, y=2).result
+
+with If(first_sum >= 0):
+    result = multiply(
+        x=first_sum, y=3).result
+
+final_sum = add(
+    x=result, y=1).result
+```
+
+<img class="workgraph-dependency" src="/assets/workgraph-overwritten-binding.svg" alt="Only the multiplication output is wired to the final addition; the conditional addition has no connection to it." />
+
+Both `with` bodies execute **while building**. Python overwrites `result` with the multiplication socket—even when that task will be skipped.
+
+</div>
+<div>
+
+### WorkGraph: context + ordering
+
+```python
+with If(first_sum < 0):
+    second_sum = add(x=first_sum, y=2).result
+    wg.ctx.result = second_sum
+
+with If(first_sum >= 0):
+    product = multiply(x=first_sum, y=3).result
+    wg.ctx.result = product
+
+final_sum = add(x=wg.ctx.result, y=1).result
+final_sum << second_sum
+final_sum << product
+```
+
+<img class="workgraph-dependency" src="/assets/workgraph-context-ordering.svg" alt="Both conditional tasks write ctx.result; solid edges carry values and dashed wait edges order the final addition after both branches resolve." />
+
+The taken task populates context at runtime. Explicit waits prevent an early read; the untaken branch is skipped.
+
+</div>
+<div>
+
+### Graph language: selected output
+
+```python
+# Inside an @graph function:
+if first_sum < 0:
+    result = add(
+        x=first_sum, y=2)
+else:
+    result = multiply(
+        x=first_sum, y=3)
+
+final_sum = add(
+    x=result, y=1)
+```
+
+The compiler creates a **branch placement with one output**. The runtime runs only the selected arm. `final_sum` depends on the branch output—not on shared context.
+
+</div>
+</div>
+
+<div class="verdict">The wait is not forgotten: the selected producer → branch output → consumer dependency is encoded in the graph.</div>
+
+<style>
+.branch-binding {
+  --slidev-code-font-size: 10px;
+  --slidev-code-line-height: 14px;
+}
+.branch-binding h3 {
+  font-size: 0.9rem;
+  margin: 0.7rem 0;
+}
+.branch-binding .grid p {
+  font-size: 12px;
+  line-height: 1.45;
+}
+.branch-binding .verdict {
+  margin-top: 0.5rem;
+}
+.branch-binding .workgraph-dependency {
+  width: 100%;
+  height: 86px;
+  object-fit: contain;
+  margin-top: 0.5rem;
+}
+</style>
+
+<!--
+In WorkGraph, If is a context manager that records zone membership. It is not a Python if:
+Python executes both with bodies when constructing the workflow, so the second assignment
+wins in the builder's local namespace. For first_sum < 0, result therefore still points
+to the skipped multiplication, not the executed addition. Adding a wait alone cannot fix
+that incorrect value reference.
+
+The context workaround records both possible runtime writers. The executed task exports
+its result to ctx; context reads do not automatically establish a producer dependency,
+so both branches must be resolved before the final task reads the slot.
+
+The new @graph body is parsed, not executed as ordinary builder Python. Lowering creates
+a BranchControl with two body templates and a common output. The final task reads that
+output. The interpreter chooses one arm, waits for its scope, and exposes its result.
+Use if/else to state the mutually exclusive choice explicitly rather than asking the
+compiler to prove that two independent tests are complementary. Independent side-effect
+ordering still requires after=.
+-->
+
+---
 layout: two-cols-header
 layoutClass: dense
 ---
