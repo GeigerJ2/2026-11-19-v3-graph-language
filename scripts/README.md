@@ -113,6 +113,59 @@ concrete type objects when tasks defined in `__main__` are serialized; postponed
 annotation strings can otherwise lose their type-name globals in this execution
 path. No engine code is patched by these examples.
 
+## Interpreter comparison
+
+`10_interpreters.py` runs the task-body and graph-body `if` examples for both
+branches (`x=-2` and `x=2`, with `y=3`). It asserts the result, root input links,
+selected child task, result creator, and workflow return link. It saves original
+AiiDA DOT/SVG files under `generated/` and styled SVGs under `public/assets/`.
+
+```bash
+uv run python pres/2026-11-19-v3-graph-language/scripts/10_interpreters.py \
+  --profile graph-examples
+```
+
+These provenance SVGs are retained as a separate comparison. The `choose_graph` node is the
+root workflow process, not a node for the condition. Its selected `add` child
+creates the result, which the root returns. The positive-input run calls only
+`multiply`. Both cases were verified in an isolated local SQLite profile.
+
+## GraphIR interpreter visualization
+
+The interpreter slide now uses `11_interpreter_ir.py`, not provenance diagrams:
+
+```bash
+uv run python pres/2026-11-19-v3-graph-language/scripts/11_interpreter_ir.py
+```
+
+No profile is required. The script builds both graphs, checks the actual IR
+placement kinds and inline operations, and saves full JSON/Mermaid under
+`generated/`, plus compact SVG views under `public/assets/`. The left-hand task
+is placed in a minimal wrapper graph: its Python body is opaque to GraphIR.
+The right-hand graph has an inline comparison and inline arithmetic in both
+branch arms. The final `record` task creates a stored return value, as required
+for a root workflow. The compact SVG collapses region port wiring and shows the
+branch output as a selected-result connector, not an executable placement.
+
+## Arithmetic boundaries
+
+`12_arithmetic_boundaries.py` generates the three arithmetic comparison slides:
+
+```bash
+uv run python pres/2026-11-19-v3-graph-language/scripts/12_arithmetic_boundaries.py \
+  --profile graph-examples
+```
+
+It compiles and runs `(x + y) * z` as one Python task, inline graph operations
+followed by a `record` task, and separate `add`/`multiply` tasks. All three were
+verified with `x=2, y=3, z=4`, producing `20`. Assertions check IR placement kinds,
+inline operator kinds, child processes, output creators, and workflow returns.
+The generated JSON/Mermaid, IR SVGs, and stored-provenance SVGs are retained.
+The checkpoint slide describes the proposed per-statement persistence design,
+explicitly labeled as not yet implemented for inline statements. This script
+verifies current execution structure, not the proposed checkpoint guarantee,
+and does not simulate crash recovery.
+
 ## Verification
 
 All eight scripts were executed sequentially with the `graph-examples` profile,

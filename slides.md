@@ -28,6 +28,7 @@ colorSchema: light
 4. Data flow
 5. Interfaces and reuse
 6. Case study
+7. Project development
 
 ---
 layout: section
@@ -189,162 +190,234 @@ def multiply_add(
 | Parallelism | Independent calls can use separate workers | Submits all ready calls before waiting |
 | Provenance | Data inputs and outputs are nodes | Inline state is checkpointed |
 
+
 ---
 
-<!-- Original slide by Alexander Goscinski (934314f), kept for discussion. -->
+# Python executes task bodies; AiiDA executes graphs
 
-# Graph language vs. task code
+<div class="grid grid-cols-2 gap-8 interpreter-comparison">
+<div>
 
-@Julian This is slop but i wanted to create a slide that explains the difference between the two without going into details:
+<div class="arithmetic-highlight execution-python">
+<h3><img src="/logos/python.svg" alt="Python logo" /> Task · Python interpreter</h3>
 
-<div class="code-boundaries">
-<pre class="code-boundaries-source"><code><span class="code-boundaries-graph">@graph
-def multiply_add(x: int, y: int, z: int) -&gt; int:</span>
-    <span class="code-boundaries-graph">product =</span> <span class="code-boundaries-task">multiply(x=x, y=y)</span>
-    <span class="code-boundaries-graph">total =</span> <span class="code-boundaries-task">add_calc(x=product, y=z)</span>
-    <span class="code-boundaries-graph">return total.sum</span></code></pre>
-<div class="code-boundaries-label code-boundaries-graph-label">
-<span class="code-boundaries-pointer">←</span>
-<div><strong>Graph statements</strong><p>AiiDA runtime · limited Python subset</p><b>Same graph process</b></div>
+```python
+@task
+def multiply_add_task(x: int, y: int, z: int) -> int:
+    product = x * y
+    total = product + z
+    return total
+```
+
 </div>
 
-<pre class="code-boundaries-source"><code><span class="code-boundaries-task">@task</span>
-def multiply(x: int, y: int) -&gt; int:
-    <span class="code-boundaries-task">return x * y</span></code></pre>
-<div class="code-boundaries-label code-boundaries-task-label">
-<span class="code-boundaries-pointer">←</span>
-<div><strong>Task call &amp; body</strong><p>Python · arbitrary Python</p><b>Separate AiiDA process per call</b><p>Independent calls: separate workers*</p></div>
+<img src="/assets/12-multiply-add-task-ir.svg" alt="GraphIR contains only an opaque multiply_add_task placement, with x, y, z inputs and a result output." />
+
+<!--
+**`ProcessTask(multiply_add_task)`** · Python executes the whole body. The arithmetic and local `product` are opaque to GraphIR.
+-->
+</div>
+<div>
+
+<div class="arithmetic-highlight execution-aiida">
+<h3><img src="/logos/aiida/logo_AiiDA.png" alt="AiiDA logo" /> Inline graph · AiiDA graph process</h3>
+
+```python
+@graph
+def multiply_add_inline(x: int, y: int, z: int) -> int:
+    product = x * y
+    total = product + z
+    return total
+```
+
+</div>
+
+<img src="/assets/12-multiply-add-inline-ir.svg" alt="GraphIR contains only inline multiplication feeding inline addition, which supplies the output." />
+
+<!--
+**`InlineOperation(mul)` → `InlineOperation(add)`** · The graph runtime evaluates both operations.
+-->
 </div>
 </div>
 
-<div class="code-boundaries-note"><code>add_calc = task(ArithmeticAddCalculation)</code><br/>* Ready tasks can run on separate daemon workers. Here, addition waits for multiplication.</div>
+<!--
+`GraphRun` inside `GraphProcess` interprets the workflow. Task bodies run in the Python interpreter of their child processes.
+-->
+<style>
+.interpreter-comparison {
+  --slidev-code-font-size: 11px;
+  --slidev-code-line-height: 15px;
+}
+.interpreter-comparison h3 { font-size: 1rem; margin: 0.4rem 0; }
+.interpreter-comparison img { width: 100%; height: 190px; margin-top: 0.4rem; }
+.interpreter-comparison p { font-size: 12px; margin: 0.4rem 0; }
+.arithmetic-highlight { padding: 10px 12px; border: 1px solid; border-radius: 12px; }
+.arithmetic-highlight.execution-python { background: #fffbea; border-color: #d8cf9b; }
+.arithmetic-highlight.execution-aiida { background: #eaf9f6; border-color: #86bfb5; }
+.arithmetic-highlight h3 { display: flex; align-items: center; gap: 10px; }
+.interpreter-comparison .arithmetic-highlight h3 img { width: 48px; height: 28px; margin: 0; object-fit: contain; }
+.arithmetic-highlight .slidev-code-wrapper,
+.arithmetic-highlight pre,
+.arithmetic-highlight pre code { background: transparent !important; box-shadow: none !important; }
+</style>
+
+<!--
+The task IR is viewed from the minimal task_boundary graph that places multiply_add_task.
+The inline graph explicitly represents add and mul operations, but they do not create
+child processes or provenance nodes. The right-hand function is an inline graph helper:
+its scalar output can feed a parent graph. It is not a standalone root workflow returning
+newly computed scalar data; a root must return stored data from a task or its inputs.
+-->
+
+---
+
+# Two languages, two execution boundaries
+
+<div class="execution-panels">
+<div class="execution-panel execution-python">
+<div>
+
+```python
+@task
+def summarize(values: list[float]) -> float:
+    import numpy as np
+    array = np.asarray(values)
+    filtered = array[np.isfinite(array)]
+    return float(np.mean(filtered))
+```
+
+</div>
+<div class="execution-logo">
+<img src="/logos/python.svg" alt="Python logo" />
+<strong>Python interpreter</strong>
+<span>Arbitrary Python</span>
+</div>
+</div>
+<div class="execution-panel execution-aiida">
+<div>
+
+```python
+@graph
+def analyze(values: list[float]) -> float:
+    mean = summarize(values=values)
+    return mean
+```
+
+</div>
+<div class="execution-logo">
+<img src="/logos/aiida/logo_AiiDA.png" alt="AiiDA logo" />
+<strong>Graph runtime</strong>
+<span>GraphProcess · GraphRun</span>
+</div>
+</div>
+</div>
+
+**Libraries inside tasks. Workflow statements inside graphs.**
+
+<style>
+.execution-panels {
+  display: grid;
+  gap: 18px;
+  margin: 1.2rem 0;
+  --slidev-code-font-size: 13px;
+  --slidev-code-line-height: 21px;
+}
+.execution-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 180px;
+  align-items: center;
+  gap: 24px;
+  padding: 14px 20px;
+  border-radius: 12px;
+  border: 1px solid;
+}
+.execution-python { background: rgba(255, 212, 59, 0.10); border-color: rgba(55, 118, 171, 0.25); }
+.execution-aiida { background: rgba(20, 184, 166, 0.08); border-color: rgba(15, 118, 110, 0.25); }
+.execution-panel pre { background: transparent !important; box-shadow: none !important; }
+.execution-logo { display: flex; flex-direction: column; align-items: center; gap: 7px; text-align: center; }
+.execution-logo img { width: 100px; height: 48px; object-fit: contain; }
+.execution-logo strong { font-size: 14px; }
+.execution-logo span { font-size: 11px; color: #64748b; }
+</style>
+
+<!--
+Task bodies are arbitrary Python; task workers need the libraries installed.
+Imports, NumPy calls, array indexing, and arbitrary library objects deliberately
+stay outside the graph language. They are supported inside tasks instead.
+The graph is parsed/lowered to GraphIR. GraphRun interprets it inside GraphProcess.
+This is an architectural boundary, not a claim that NumPy could never be interpreted.
+Python logo: Devicon python-original.svg, https://github.com/devicons/devicon
+(Devicon distribution under MIT; Python logo remains its owners' trademark).
+-->
+
+---
+
+# Current: task calls checkpoint; inline operations do not
+
+<div class="grid grid-cols-2 gap-8 statement-checkpoints">
+<div>
+
+### Separate tasks · checkpoint boundaries
+
+```python
+@graph
+def calculate(x: int, y: int, z: int) -> int:
+    product = multiply(x=x, y=y)
+    # ← Checkpoint: wait / resume
+
+    total = add(x=product, y=z)
+    # ← Checkpoint: wait / resume
+
+    return total
+```
+
+Each call is a **`ProcessTask`**. The workflow checkpoints at task wait / resume boundaries, retaining completed task results.
+
+</div>
+<div>
+
+### Inline operations · no boundary between them
+
+```python
+@graph
+def calculate(x: int, y: int, z: int) -> int:
+    product = x * y
+    # No checkpoint here
+
+    total = product + z
+    # No checkpoint here
+
+    return record(value=total)
+    # ← Checkpoint: task wait / resume
+```
+
+Each arithmetic step is an **`InlineOperation`**. Both execute in one scheduling step; only the final task call introduces a wait / resume boundary.
+
+</div>
+</div>
+
+**Current behavior:** separate task calls provide recovery boundaries; inline arithmetic may be replayed since the last checkpoint.
+
+<!--
+Both examples are graph functions; the distinction is task placement versus inline
+operations, not Python function bodies versus graph bodies.
+multiply and add are declared @tasks performing multiplication and addition.
+Their implementations are omitted to focus on scheduling boundaries.
+The scheduler dispatches multiply, waits, then dispatches add only after its dependency
+succeeds. Process-state transitions persist progress when persistence is enabled.
+The arrows are conceptual wait/resume boundaries, not literal per-call checkpoint
+instructions or an exactly-once guarantee around external side effects.
+The inline graph evaluates mul and add in one scheduling step before dispatching record.
+record(value) is a task returning its argument as stored data, required for root output.
+Checkpointing does not preserve an instruction pointer inside arbitrary Python tasks.
+This slide describes current behavior; the next slide describes a proposed design.
+-->
 
 ---
 layout: section
 ---
 
 # Separating build and run time
-
----
-class: branch-binding
----
-
-# Branch results: Python binding vs. graph interpretation
-
-**WorkGraph executes the builder in Python. The graph language interprets the control flow at run time.**
-
-<div class="grid grid-cols-3 gap-5">
-<div>
-
-### WorkGraph: no runtime selection
-
-```python
-with If(first_sum < 0):
-    result = add(
-        x=first_sum, y=2).result
-
-with If(first_sum >= 0):
-    result = multiply(
-        x=first_sum, y=3).result
-
-final_sum = add(
-    x=result, y=1).result
-```
-
-<img class="workgraph-dependency" src="/assets/workgraph-overwritten-binding.svg" alt="Only the multiplication output is wired to the final addition; the conditional addition has no connection to it." />
-
-Both `with` bodies execute **while building**. Python overwrites `result` with the multiplication socket—even when that task will be skipped.
-
-</div>
-<div>
-
-### WorkGraph: context + ordering
-
-```python
-with If(first_sum < 0):
-    second_sum = add(x=first_sum, y=2).result
-    wg.ctx.result = second_sum
-
-with If(first_sum >= 0):
-    product = multiply(x=first_sum, y=3).result
-    wg.ctx.result = product
-
-final_sum = add(x=wg.ctx.result, y=1).result
-final_sum << second_sum
-final_sum << product
-```
-
-<img class="workgraph-dependency" src="/assets/workgraph-context-ordering.svg" alt="Both conditional tasks write ctx.result; solid edges carry values and dashed wait edges order the final addition after both branches resolve." />
-
-The taken task populates context at runtime. Explicit waits prevent an early read; the untaken branch is skipped.
-
-</div>
-<div>
-
-### Graph language: selected output
-
-```python
-# Inside an @graph function:
-if first_sum < 0:
-    result = add(
-        x=first_sum, y=2)
-else:
-    result = multiply(
-        x=first_sum, y=3)
-
-final_sum = add(
-    x=result, y=1)
-```
-
-The compiler creates a **branch placement with one output**. The runtime runs only the selected arm. `final_sum` depends on the branch output—not on shared context.
-
-</div>
-</div>
-
-<div class="verdict">The wait is not forgotten: the selected producer → branch output → consumer dependency is encoded in the graph.</div>
-
-<style>
-.branch-binding {
-  --slidev-code-font-size: 10px;
-  --slidev-code-line-height: 14px;
-}
-.branch-binding h3 {
-  font-size: 0.9rem;
-  margin: 0.7rem 0;
-}
-.branch-binding .grid p {
-  font-size: 12px;
-  line-height: 1.45;
-}
-.branch-binding .verdict {
-  margin-top: 0.5rem;
-}
-.branch-binding .workgraph-dependency {
-  width: 100%;
-  height: 86px;
-  object-fit: contain;
-  margin-top: 0.5rem;
-}
-</style>
-
-<!--
-In WorkGraph, If is a context manager that records zone membership. It is not a Python if:
-Python executes both with bodies when constructing the workflow, so the second assignment
-wins in the builder's local namespace. For first_sum < 0, result therefore still points
-to the skipped multiplication, not the executed addition. Adding a wait alone cannot fix
-that incorrect value reference.
-
-The context workaround records both possible runtime writers. The executed task exports
-its result to ctx; context reads do not automatically establish a producer dependency,
-so both branches must be resolved before the final task reads the slot.
-
-The new @graph body is parsed, not executed as ordinary builder Python. Lowering creates
-a BranchControl with two body templates and a common output. The final task reads that
-output. The interpreter chooses one arm, waits for its scope, and exposes its result.
-Use if/else to state the mutually exclusive choice explicitly rather than asking the
-compiler to prove that two independent tests are complementary. Independent side-effect
-ordering still requires after=.
--->
 
 ---
 layout: two-cols-header
@@ -539,6 +612,61 @@ Local run: `x=10, flag=True → result=11`. Illustrative node IDs.
 - Branches, loops, subgraphs, maps share one graph process.
 - Separate task processes; hierarchical call labels (`branch_1__add`).
 - Task creates (`CREATE`); graph returns (`RETURN`) the same node.
+
+---
+layout: two-cols-header
+---
+
+# Read and query the branch output
+
+::left::
+
+**Read the public workflow output**
+
+```python
+from aiida.engine import run_get_node
+from aiida.orm import load_node
+
+outputs, root = run_get_node(
+    choose, x=10, flag=True,
+)
+assert outputs['result'].value == 11
+
+# Later, in another session:
+saved = load_node(root.pk)
+result = saved.outputs.result
+assert result.value == 11
+```
+
+The graph exposes the selected result. No need to inspect branch names or child tasks.
+
+::right::
+
+**Query the stored RETURN link**
+
+```python
+from aiida.orm import GraphNode, Int, QueryBuilder
+
+query = QueryBuilder()
+query.append(
+    GraphNode,
+    filters={'id': root.pk},
+    tag='workflow',
+)
+query.append(
+    Int,
+    with_incoming='workflow',
+    edge_filters={
+        'type': 'return',
+        'label': 'result',
+    },
+    project='*',
+)
+result, = query.one()
+assert result.value == 11
+```
+
+The query follows **workflow → RETURN → result**, regardless of which branch ran.
 
 ---
 layout: two-cols-header
@@ -1080,3 +1208,443 @@ mesh = [n * factor for n in grid]
 - Inline `sum`, generators, `tuple` unsupported; `count_wann` stays a task.
 - Positivity, grid length: runtime checks in tasks.
 - Per-item metadata unsupported; `.alias(...)` names the whole map.
+
+---
+layout: section
+---
+
+# Project development
+
+---
+class: branch-binding
+---
+
+# Branch results: Python binding vs. graph interpretation
+
+**WorkGraph executes the builder in Python. The graph language interprets the control flow at run time.**
+
+<div class="grid grid-cols-3 gap-5">
+<div>
+
+### WorkGraph: no runtime selection
+
+```python
+with If(first_sum < 0):
+    result = add(
+        x=first_sum, y=2).result
+
+with If(first_sum >= 0):
+    result = multiply(
+        x=first_sum, y=3).result
+
+final_sum = add(
+    x=result, y=1).result
+```
+
+<img class="workgraph-dependency" src="/assets/workgraph-overwritten-binding.svg" alt="Only the multiplication output is wired to the final addition; the conditional addition has no connection to it." />
+
+Both `with` bodies execute **while building**. Python overwrites `result` with the multiplication socket—even when that task will be skipped.
+
+</div>
+<div>
+
+### WorkGraph: context + ordering
+
+```python
+with If(first_sum < 0):
+    second_sum = add(x=first_sum, y=2).result
+    wg.ctx.result = second_sum
+
+with If(first_sum >= 0):
+    product = multiply(x=first_sum, y=3).result
+    wg.ctx.result = product
+
+final_sum = add(x=wg.ctx.result, y=1).result
+final_sum << second_sum
+final_sum << product
+```
+
+<img class="workgraph-dependency" src="/assets/workgraph-context-ordering.svg" alt="Both conditional tasks write ctx.result; solid edges carry values and dashed wait edges order the final addition after both branches resolve." />
+
+The taken task populates context at runtime. Explicit waits prevent an early read; the untaken branch is skipped.
+
+</div>
+<div>
+
+### Graph language: selected output
+
+```python
+# Inside an @graph function:
+if first_sum < 0:
+    result = add(
+        x=first_sum, y=2)
+else:
+    result = multiply(
+        x=first_sum, y=3)
+
+final_sum = add(
+    x=result, y=1)
+```
+
+The compiler creates a **branch placement with one output**. The runtime runs only the selected arm. `final_sum` depends on the branch output—not on shared context.
+
+</div>
+</div>
+
+<div class="verdict">The wait is not forgotten: the selected producer → branch output → consumer dependency is encoded in the graph.</div>
+
+<style>
+.branch-binding {
+  --slidev-code-font-size: 10px;
+  --slidev-code-line-height: 14px;
+}
+.branch-binding h3 {
+  font-size: 0.9rem;
+  margin: 0.7rem 0;
+}
+.branch-binding .grid p {
+  font-size: 12px;
+  line-height: 1.45;
+}
+.branch-binding .verdict {
+  margin-top: 0.5rem;
+}
+.branch-binding .workgraph-dependency {
+  width: 100%;
+  height: 86px;
+  object-fit: contain;
+  margin-top: 0.5rem;
+}
+</style>
+
+<!--
+In WorkGraph, If is a context manager that records zone membership. It is not a Python if:
+Python executes both with bodies when constructing the workflow, so the second assignment
+wins in the builder's local namespace. For first_sum < 0, result therefore still points
+to the skipped multiplication, not the executed addition. Adding a wait alone cannot fix
+that incorrect value reference.
+
+The context workaround records both possible runtime writers. The executed task exports
+its result to ctx; context reads do not automatically establish a producer dependency,
+so both branches must be resolved before the final task reads the slot.
+
+The new @graph body is parsed, not executed as ordinary builder Python. Lowering creates
+a BranchControl with two body templates and a common output. The final task reads that
+output. The interpreter chooses one arm, waits for its scope, and exposes its result.
+Use if/else to state the mutually exclusive choice explicitly rather than asking the
+compiler to prove that two independent tests are complementary. Independent side-effect
+ordering still requires after=.
+-->
+
+---
+
+# Thoughts: checkpoint after each graph statement
+
+**Two proposals · neither implemented yet**
+
+<div class="grid grid-cols-2 gap-8 statement-checkpoints">
+<div>
+
+### Explicit · choose checkpoint locations
+
+```python
+@graph
+def arithmetic_inline(x: int, y: int, z: int) -> int:
+    total = x + y
+    checkpoint()
+
+    product = total * z
+    checkpoint()
+
+    return record(value=product)
+    # ← Checkpoint at task wait / resume
+```
+
+**`checkpoint()`** persists progress at explicitly chosen graph boundaries.
+
+</div>
+<div>
+
+### Automatic · checkpoint every statement
+
+```python
+@graph
+def arithmetic_inline(x: int, y: int, z: int) -> int:
+    total = x + y
+    # ← Checkpoint: total saved
+
+    product = total * z
+    # ← Checkpoint: product saved
+
+    return record(value=product)
+    # ← Checkpoint at task wait / resume
+```
+
+**`runtime_config={"graph_inline_persistence": True}`** persists each completed graph statement automatically.
+
+</div>
+</div>
+
+If execution stops after saving `total`, restore it and continue with `product`—without recomputing the addition.
+
+<style>
+.statement-checkpoints {
+  --slidev-code-font-size: 11px;
+  --slidev-code-line-height: 16px;
+}
+.statement-checkpoints h3 { font-size: 1rem; margin: 0.7rem 0; }
+.statement-checkpoints p { font-size: 13px; }
+</style>
+
+<!--
+This slide describes the intended design, NOT current runtime behavior.
+graph_inline_persistence is a proposed runtime_config option; its name and API are
+not implemented or finalized. Opting in would enable the inline statement boundaries
+shown here; leaving it disabled would retain current wait/resume checkpointing.
+An alternative proposal is a checkpoint() statement inside @graph, letting authors
+choose explicit durable boundaries instead of checkpointing every inline statement.
+checkpoint() would be a graph-language intrinsic handled by the graph runtime, not
+an ordinary task or arbitrary Python function. This syntax is also unimplemented.
+Today inline operations can execute in one scheduling step; persistence happens at
+process-state transitions, not after every inline assignment. Implementing the target
+requires explicit durable boundaries when advancing the interpreter's statement-level
+progress, including inline values and control-flow scope state.
+
+The proposed guarantee is a checkpoint after each completed executable graph statement,
+not after every physical source line, comment, decorator, or function signature.
+The checkpoint records enough information to resume at the next unfinished step.
+Task calls additionally need their pending/completed identities persisted; an unfinished
+call is reattached to its existing child process rather than blindly submitted again.
+Wait/resume boundaries are drawn schematically around the return task call.
+
+Task bodies remain arbitrary Python and do not acquire instruction-level recovery.
+A crash before a checkpoint completes may replay work since the preceding saved state.
+Checkpointing alone does not provide exactly-once guarantees for external side effects.
+scripts/12_arithmetic_boundaries.py validates the existing IR, outputs, and provenance;
+it does NOT verify the proposed per-statement persistence guarantee.
+-->
+
+---
+
+# Design through workflow evaluation
+
+### Loop 1 · We port real plugins
+
+<div class="workflow-eval-loop">
+<div><strong>1 · Rewrite</strong><span>QE + Koopmans workflows<br/>in the graph language</span></div>
+<b>→</b>
+<div><strong>2 · Identify problems</strong><span>What is missing or awkward<br/>in the rewrite?</span></div>
+<b>→</b>
+<div><strong>3 · Solve</strong><span>Choose a design change<br/>and update the rewrite</span></div>
+</div>
+<div class="workflow-eval-return">↶ Revisit the workflows with the revised design</div>
+
+### Loop 2 · WorkGraph users try the language
+
+<div class="workflow-eval-loop">
+<div><strong>1 · Explore</strong><span>Give the language to WorkGraph<br/>users and let them play</span></div>
+<b>→</b>
+<div><strong>2 · Collect feedback</strong><span>Where do they get stuck?<br/>What feels unnatural?</span></div>
+<b>→</b>
+<div><strong>3 · Iterate</strong><span>Revise the language<br/>and give it back to users</span></div>
+</div>
+<div class="workflow-eval-return">↶ Another round of hands-on use and feedback</div>
+
+<style>
+.workflow-eval-loop { display: flex; gap: 12px; align-items: center; margin: 0.7rem 0 0.4rem; }
+.workflow-eval-loop > div { flex: 1; padding: 0.8rem 1rem; border: 1px solid #94a3b8; border-radius: 8px; background: #f8fafc; }
+.workflow-eval-loop strong { display: block; color: #1d4ed8; }
+.workflow-eval-loop span { display: block; margin-top: 0.4rem; font-size: 12px; line-height: 1.5; }
+.workflow-eval-loop > b { color: #64748b; }
+.workflow-eval-return { text-align: center; color: #64748b; margin-bottom: 1.3rem; font-size: 12px; }
+</style>
+
+<!--
+Two distinct three-stage evaluation loops.
+First, we rewrite workflows from the QE and Koopmans plugins ourselves, identify
+concrete problems in those rewrites, and decide how to solve them in the design.
+Second, we give the language to people who have used WorkGraph, ask them to explore
+it, collect their feedback, and iterate. This is not the same as co-authoring each
+plugin rewrite with its authors.
+The following Koopmans case study illustrates the first loop.
+-->
+
+---
+layout: section
+---
+
+# Appendix
+
+---
+
+# What provenance records: tasks and data—not the `if`
+
+<div class="grid grid-cols-2 gap-8 interpreter-comparison">
+<div>
+
+### Computation inside one task
+
+```python
+@task
+def choose_task(x: int, y: int) -> int:
+    if x < 0:
+        result = x + y
+    else:
+        result = x * y
+    return result
+```
+
+<img src="/assets/10-task-add-slides.svg" alt="Stored provenance: x and y are inputs of choose_task, which creates result 1." />
+
+One calculation **creates** the result. Its internal Python operations are not separate nodes.
+
+</div>
+<div>
+
+### Graph calling arithmetic tasks
+
+```python
+@graph
+def choose_graph(x: int, y: int) -> int:
+    if x < 0:
+        result = add(x=x, y=y)
+    else:
+        result = multiply(x=x, y=y)
+    return result
+```
+
+<img src="/assets/10-graph-add-slides.svg" alt="Stored provenance: choose_graph calls add, which creates result 1; choose_graph returns that same data node." />
+
+The selected task **creates** the result; the root workflow **returns** it. No node for the `if` or untaken task.
+
+</div>
+</div>
+
+Actual runs: **x = −2, y = 3 → result = 1** · `scripts/10_interpreters.py`
+
+<!--
+This restores the earlier provenance comparison, with verified AiiDA-generated SVGs.
+Unlike the preceding GraphIR slide, the right-hand graph deliberately calls arithmetic
+TASKS rather than using inline arithmetic. That makes the selected add calculation
+visible in provenance. With the preceding inline version, provenance instead contains
+only the root workflow and the final record task; the inline condition and arithmetic
+remain in GraphIR/runtime state, not separate provenance nodes.
+The verification script checks both branch outcomes, the selected child, CREATE,
+RETURN, and input links. Diagram styling preserves all actual nodes and links.
+-->
+
+---
+
+# Who interprets the `if`—and what does GraphIR see?
+
+<div class="grid grid-cols-2 gap-8 interpreter-comparison">
+<div>
+
+### Task · Python interpreter
+
+```python
+@task
+def choose_task(x: int, y: int) -> int:
+    if x < 0:
+        result = x + y
+    else:
+        result = x * y
+    return result
+```
+
+<img src="/assets/11-task-ir.svg" alt="GraphIR sees one opaque choose_task placement between inputs and output; its Python if and arithmetic are not represented." />
+
+**`ProcessTask(choose_task)`** · The Python `if` and arithmetic are opaque to GraphIR.
+
+</div>
+<div>
+
+### Graph · AiiDA graph process
+
+```python
+@graph
+def choose_graph(x: int, y: int) -> int:
+    if x < 0:
+        result = x + y
+    else:
+        result = x * y
+    return record(value=result)
+```
+
+<img src="/assets/11-graph-ir.svg" alt="GraphIR contains an inline comparison, BranchControl, inline addition and multiplication arms, and a record task consuming the selected result." />
+
+**`InlineOperation(lt)` → `BranchControl`** · Both arms contain an `InlineOperation`; the selected result feeds `ProcessTask(record)`.
+
+</div>
+</div>
+
+Compact views of compiled **GraphIR**, not provenance. `GraphRun` inside `GraphProcess` interprets the right-hand structure.
+
+
+
+<!--
+scripts/11_interpreter_ir.py compiles and validates the actual definitions without
+running any processes. It saves complete JSON and Mermaid IR alongside compact SVG
+views. Region port wiring is collapsed; the selected-result node represents the
+branch output, not an additional executable placement.
+The left task has no GraphIR body. Its placement is shown as seen from the minimal
+task_boundary graph that calls it. Python alone interprets that task's condition.
+The right graph uses inline arithmetic: the comparison and both branch operations
+are InlineOperation placements. No arithmetic child process is submitted.
+record(value) is a task returning value, required here to create a stored result:
+a root workflow cannot return a newly computed inline scalar. It is not needed
+to evaluate the branch and does not hide the branch's arithmetic.
+GraphIR contains both arms statically; at runtime only one arm scope executes.
+Provenance would record the root and record task, but not the inline if or arithmetic.
+-->
+
+---
+
+# Two operations: what does provenance record?
+
+<div class="grid grid-cols-2 gap-8 interpreter-comparison">
+<div>
+
+### One Python task
+
+```python
+@task
+def arithmetic_task(x: int, y: int, z: int) -> int:
+    total = x + y
+    product = total * z
+    return product
+```
+
+<img src="/assets/12-task-slides.svg" alt="Actual provenance: x, y, z are inputs of arithmetic_task, which creates result 20." />
+
+The task consumes **x, y, z** and creates **20**. The intermediate **5** is not a data node.
+
+</div>
+<div>
+
+### One inline graph + output task
+
+```python
+@graph
+def arithmetic_inline(x: int, y: int, z: int) -> int:
+    total = x + y
+    product = total * z
+    return record(value=product)
+```
+
+<img src="/assets/12-inline-slides.svg" alt="Actual provenance: arithmetic_inline consumes x, y, z and calls record with the computed value; record creates the result that the graph returns." />
+
+The graph calls `record` and returns its output. Inline **+** and **×** are in GraphIR, not provenance.
+
+</div>
+</div>
+
+Actual runs: **x = 2, y = 3, z = 4 → result = 20** · Original inputs remain linked to the root graph.
+
+<!--
+These are real AiiDA-generated diagrams, with all node and link labels preserved.
+The inline value passed to record is materialized as an input Data node; record creates
+its own output Data node. That input has no calculation creator for the inline arithmetic.
+Do not mistake that materialization for provenance of add or multiply.
+The script asserts output values, child counts, result creators, and workflow returns.
+-->
